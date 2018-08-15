@@ -4,7 +4,8 @@
 \alias{sim_H}
 \title{Description}
 \usage{
-sim_H(S, seed)
+sim_H(S, seed = 1234, d.params = c(Tumor = 0.3, Stromal = 0.5, Immune = 0.1,
+  Normal = 0.1))
 }
 \description{
 Description

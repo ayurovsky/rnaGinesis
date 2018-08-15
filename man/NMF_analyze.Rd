@@ -4,7 +4,7 @@
 \alias{NMF_analyze}
 \title{Description}
 \usage{
-NMF_analyze(data, W, seed)
+NMF_analyze(data, W, seed = 1234)
 }
 \description{
 Description

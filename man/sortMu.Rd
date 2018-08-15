@@ -4,7 +4,7 @@
 \alias{sortMu}
 \title{Description}
 \usage{
-sortMu(mu, A, scaleFactor)
+sortMu(mu, A, scaleFactor = 0)
 }
 \description{
 Description

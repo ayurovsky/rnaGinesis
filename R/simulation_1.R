@@ -2,9 +2,6 @@
 #'
 #' @export
 
-
-
-
 simulation_1 = function(num.sim, S, seed)
 {
   h_RMSE = matrix(0, nrow=num.sim, ncol=4, byrow=TRUE)

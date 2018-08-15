@@ -2,8 +2,6 @@
 #'
 #' @export
 
-
-
 evalCOSDIST = function(truth_mean, observed)
 {
   cor_identified = cor(truth_mean, observed)

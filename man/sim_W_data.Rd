@@ -4,7 +4,7 @@
 \alias{sim_W_data}
 \title{Description}
 \usage{
-sim_W_data(A_tumor, seed)
+sim_W_data(mu_tumor, A_tumor, seed = 1234)
 }
 \description{
 Description

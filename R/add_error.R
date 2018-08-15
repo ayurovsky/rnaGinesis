@@ -2,9 +2,9 @@
 #'
 #' @export
 
-
-
-add_error = function(sim_data, seed, noise_setting)
+add_error = function(sim_data,
+                     seed = 1234,
+                     noise_setting)
 {
   if (noise_setting==0)
   {
@@ -15,7 +15,9 @@ add_error = function(sim_data, seed, noise_setting)
     set.seed(seed)
     G = nrow(sim_data)
     S = ncol(sim_data)
-    noise = matrix(0, nrow=G, ncol=S)
+    noise = matrix(0,
+                   nrow=G,
+                   ncol=S)
     s = abs(log(noise_setting))
     for (i in 1:S)
     {

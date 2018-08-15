@@ -2,14 +2,11 @@
 #'
 #' @export
 
-
-
-
-NMF_analyze = function(data, W, seed)
+NMF_analyze = function(data, W, seed = 1234)
 {
-  #ptm = proc.time()
-  result = nmf(x=data, rank=4, seed = seed)
-  #proc.time()-ptm
+  result = nmf(x    = data,
+               rank = 4,
+               seed = seed)
   w = basis(result)
   h = coef(result)
   median_w = apply(w, 2, median)

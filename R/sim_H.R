@@ -2,14 +2,16 @@
 #'
 #' @export
 
-sim_H = function(S, seed)
+sim_H = function(S,
+                 seed = 1234, 
+                 d.params = c("Tumor" = .3,
+                              "Stromal" =.5,
+                              "Immune" = .1,
+                              "Normal" = .1))
 {
   set.seed(seed)
-  #k = 4
-  #S = 1000
-  H = t(rdirichlet(S, c(.3, .5, .1, .1)))
-  rownames(H) = c("Tumor", "Stromal", "Immune", "Normal")
+  H = t(rdirichlet(S,d.params))
+  rownames(H) = names(d.params)
   colnames(H) = paste0("sample_", 1:S)
-  #ggpairs(as.data.frame(t(H)), 1:4)
   return(H)
 }
