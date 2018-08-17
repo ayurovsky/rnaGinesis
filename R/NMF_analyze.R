@@ -1,8 +1,11 @@
 #' Description
 #'
 #' @export
+#' @import NMF
 
-NMF_analyze = function(data, W, seed = 1234)
+NMF_analyze = function(data,
+                       W,
+                       seed = 1234)
 {
   result = nmf(x    = data,
                rank = 4,
@@ -26,5 +29,5 @@ NMF_analyze = function(data, W, seed = 1234)
   cor_orders = apply(X = possible.perms, 1, FUN=tot.cor, w_exp = W, w_obs = w_new)
   best = possible.perms[which(cor_orders==max(cor_orders)),]
   w_new_sorted = w_new[,best]
-  return (list(h_new_sum1, w_new_sorted))
+  return (list(w_new_sorted,h_new_sum1))
 }

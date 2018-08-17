@@ -2,10 +2,13 @@
 % Please edit documentation in R/sortMu.R
 \name{sortMu}
 \alias{sortMu}
-\title{Description}
+\title{Take in a single Mu and A
+Return a single adjusted Mu and A}
 \usage{
-sortMu(mu, A, scaleFactor = 0)
+sortMu(mu = 101 - (1:100), A = 1:100 \%*\% t(1:100), scaleFactor = 10,
+  seed = 1234, verbose = TRUE)
 }
 \description{
-Description
+Take in a single Mu and A
+Return a single adjusted Mu and A
 }

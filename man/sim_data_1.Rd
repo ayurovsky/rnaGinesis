@@ -2,10 +2,14 @@
 % Please edit documentation in R/sim_data_1.R
 \name{sim_data_1}
 \alias{sim_data_1}
-\title{Description}
+\title{Helper function that:
+ use a single mixture and a set of mvn params 
+ to simulate a single mixed sample}
 \usage{
 sim_data_1(h.i, mean, chol)
 }
 \description{
-Description
+Helper function that:
+ use a single mixture and a set of mvn params 
+ to simulate a single mixed sample
 }

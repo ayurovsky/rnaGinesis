@@ -1,19 +1,29 @@
-#' Description
+#' Take in a single mu and A, and a mixture matrix H
+#' Return mixed expression
 #'
 #' @export
 
 
-sim_data = function(A_tumor, mu_tumor, H, seed =1234)
+sim_data = function(mu_tumor = 101-(1:100),
+                    A_tumor = 1:100 %*% t(1:100),
+                    H = sim_H(),
+                    scaleFactor = 10,
+                    seed = 1234)
 {
-  set.seed(seed)
+  stroma_info = sortMu(mu = mu_tumor,
+                       A = A_tumor,
+                       scaleFactor = scaleFactor,
+                       seed = seed+1)
   
-  o = order(mu_tumor)
-  mu_tumor = mu_tumor[o]
-  A_tumor = A_tumor[o,o]
+  immune_info = sortMu(mu = mu_tumor,
+                       A = A_tumor,
+                       scaleFactor = scaleFactor,
+                       seed = seed+2)
   
-  stroma_info = sortMu(mu_tumor, A_tumor, 2)
-  immune_info = sortMu(mu_tumor, A_tumor, 2)
-  normal_info = sortMu(mu_tumor, A_tumor, 2)
+  normal_info = sortMu(mu = mu_tumor,
+                       A = A_tumor,
+                       scaleFactor = scaleFactor,
+                       seed = seed+3)
   
   mu_stroma = stroma_info[[1]]
   A_stroma = stroma_info[[2]]
@@ -22,8 +32,20 @@ sim_data = function(A_tumor, mu_tumor, H, seed =1234)
   mu_normal = normal_info[[1]]
   A_normal = normal_info[[2]]
   
-  mu = cbind(mu_tumor, mu_stroma, mu_immune, mu_normal)
-  A = list(A_tumor, A_stroma, A_immune, A_normal)
+  mu = cbind(mu_tumor,
+             mu_stroma,
+             mu_immune,
+             mu_normal)
+  
+  A = list(A_tumor,
+           A_stroma,
+           A_immune,
+           A_normal)
+  
+  # for each sample's mixture matrix
+  # ... and a set of mvn params
+  # ... simulate mixed expression
   data = apply(H, 2, sim_data_1, mu, A)
+  
   return(list(data, exp(mu)))
 }

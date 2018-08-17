@@ -4,7 +4,7 @@
 
 add_error = function(sim_data,
                      seed = 1234,
-                     noise_setting)
+                     noise_setting = 2)
 {
   if (noise_setting==0)
   {
@@ -15,14 +15,12 @@ add_error = function(sim_data,
     set.seed(seed)
     G = nrow(sim_data)
     S = ncol(sim_data)
-    noise = matrix(0,
+    s = abs(log(noise_setting))
+    
+    noise = matrix(rnorm(G*S, mean = 0, sd = s),
                    nrow=G,
                    ncol=S)
-    s = abs(log(noise_setting))
-    for (i in 1:S)
-    {
-      noise[,i] = rnorm(G, mean = 0, sd = s)
-    }
+    
     sim_data_error = sim_data * exp(noise) 
     return(sim_data_error)
   }

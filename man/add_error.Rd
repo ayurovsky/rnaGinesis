@@ -4,7 +4,7 @@
 \alias{add_error}
 \title{Description}
 \usage{
-add_error(sim_data, seed, noise_setting)
+add_error(sim_data, seed = 1234, noise_setting = 2)
 }
 \description{
 Description

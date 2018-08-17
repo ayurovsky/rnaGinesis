@@ -1,0 +1,34 @@
+---
+title: "Demo"
+output: pdf_document
+---
+
+```{r}
+library(rnaGinesis)
+library(ggplot2)
+library(reshape)
+mu <- rnaGinesis::mu
+A <- rnaGinesis::A
+```
+
+```{r}
+simresult <- simulate_and_test(A_tumor  = A[1:100,1:100],
+                               mu_tumor = mu[1:100],
+                               num.sim  = 10,
+                               Samplesize  = 100,
+                               scaleFactor = 50,
+                               d.params    = c("Tumor"   = .3,
+                                               "Stromal" = .3,
+                                               "Immune"  = .3,
+                                               "Normal"  = .3),
+                               noise_setting = 2,
+                               seed          = 1234 )
+
+h_RMSE     <- simresult[[1]]
+w_cos_dist <- simresult[[2]]
+
+p <- ggplot(data = melt(w_cos_dist),
+            aes(y = value,x=X2))
+p <- p + geom_violin()
+print(p)
+```

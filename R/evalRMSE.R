@@ -1,6 +1,7 @@
 #' Description
 #'
 #' @export
+#' @import Metrics
 
 evalRMSE = function(truth, observed)
 {

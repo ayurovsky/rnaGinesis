@@ -2,10 +2,13 @@
 % Please edit documentation in R/sim_data.R
 \name{sim_data}
 \alias{sim_data}
-\title{Description}
+\title{Take in a single mu and A, and a mixture matrix H
+Return mixed expression}
 \usage{
-sim_data(A_tumor, mu_tumor, H, seed)
+sim_data(mu_tumor = 101 - (1:100), A_tumor = 1:100 \%*\% t(1:100),
+  H = sim_H(), scaleFactor = 10, seed = 1234)
 }
 \description{
-Description
+Take in a single mu and A, and a mixture matrix H
+Return mixed expression
 }
