@@ -10,25 +10,297 @@ library(reshape)
 mu <- rnaGinesis::mu
 A <- rnaGinesis::A
 ```
+ 
+
 
 ```{r}
-simresult <- simulate_and_test(A_tumor  = A[1:100,1:100],
-                               mu_tumor = mu[1:100],
-                               num.sim  = 10,
+simresult.a <- simulate_and_test(A_tumor  = A[1:100,1:100],
+                               mu_tumor   = mu[1:100],
+                               num.sim    = 20,
                                Samplesize  = 100,
-                               scaleFactor = 50,
+                               scaleFactor = 30,
                                d.params    = c("Tumor"   = .3,
-                                               "Stromal" = .3,
-                                               "Immune"  = .3,
-                                               "Normal"  = .3),
-                               noise_setting = 2,
+                                               "Stromal" = .5,
+                                               "Immune"  = .1,
+                                               "Normal"  = .1),
+                               noise_setting = 1.5,
                                seed          = 1234 )
 
-h_RMSE     <- simresult[[1]]
-w_cos_dist <- simresult[[2]]
+```
 
-p <- ggplot(data = melt(w_cos_dist),
-            aes(y = value,x=X2))
+# high noise
+
+```{r}
+simresult.b <- simulate_and_test(A_tumor  = A[1:100,1:100],
+                               mu_tumor   = mu[1:100],
+                               num.sim    = 20,
+                               Samplesize  = 100,
+                               scaleFactor = 30,
+                               d.params    = c("Tumor"   = .3,
+                                               "Stromal" = .5,
+                                               "Immune"  = .1,
+                                               "Normal"  = .1),
+                               noise_setting = 10,
+                               seed          = 1234 )
+
+```
+
+```{r}
+x.a <- melt(simresult.a[[1]])
+x.b <- melt(simresult.b[[1]])
+x.a$condition <- "a"
+x.b$condition <- "b"
+
+mydf <- rbind(x.a,x.b)
+mydf<- mydf[,-1]
+names(mydf) <- c("tissue","H.RMSE","condition")
+
+p <- ggplot(data = mydf,
+            aes(y = H.RMSE,
+                x= tissue))
 p <- p + geom_violin()
+p <- p + geom_jitter(width = 0.1)
+p <- p + facet_grid(~condition)
 print(p)
 ```
+
+```{r}
+x.a <- melt(simresult.a[[4]])
+x.b <- melt(simresult.b[[4]])
+x.a$condition <- "a"
+x.b$condition <- "b"
+
+mydf <- rbind(x.a,x.b)
+mydf<- mydf[,-1]
+names(mydf) <- c("tissue","w_cos_dist","condition")
+
+p <- ggplot(data = mydf,
+            aes(y = w_cos_dist,
+                x= tissue))
+p <- p + geom_violin()
+p <- p + geom_jitter(width = 0.1)
+p <- p + facet_grid(~condition)
+print(p)
+```
+
+# low noise
+
+```{r}
+simresult.b <- simulate_and_test(A_tumor  = A[1:100,1:100],
+                               mu_tumor   = mu[1:100],
+                               num.sim    = 20,
+                               Samplesize  = 100,
+                               scaleFactor = 30,
+                               d.params    = c("Tumor"   = .3,
+                                               "Stromal" = .5,
+                                               "Immune"  = .1,
+                                               "Normal"  = .1),
+                               noise_setting = 1.01,
+                               seed          = 1234 )
+
+```
+
+```{r}
+x.a <- melt(simresult.a[[1]])
+x.b <- melt(simresult.b[[1]])
+x.a$condition <- "a"
+x.b$condition <- "b"
+
+mydf <- rbind(x.a,x.b)
+mydf<- mydf[,-1]
+names(mydf) <- c("tissue","H.RMSE","condition")
+
+p <- ggplot(data = mydf,
+            aes(y = H.RMSE,
+                x= tissue))
+p <- p + geom_violin()
+p <- p + geom_jitter(width = 0.1)
+p <- p + facet_grid(~condition)
+print(p)
+```
+
+```{r}
+x.a <- melt(simresult.a[[4]])
+x.b <- melt(simresult.b[[4]])
+x.a$condition <- "a"
+x.b$condition <- "b"
+
+mydf <- rbind(x.a,x.b)
+mydf<- mydf[,-1]
+names(mydf) <- c("tissue","w_cos_dist","condition")
+
+p <- ggplot(data = mydf,
+            aes(y = w_cos_dist,
+                x= tissue))
+p <- p + geom_violin()
+p <- p + geom_jitter(width = 0.1)
+p <- p + facet_grid(~condition)
+print(p)
+```
+
+# high rearrange
+
+```{r}
+simresult.b <- simulate_and_test(A_tumor  = A[1:100,1:100],
+                               mu_tumor   = mu[1:100],
+                               num.sim    = 20,
+                               Samplesize  = 100,
+                               scaleFactor = 200,
+                               d.params    = c("Tumor"   = .3,
+                                               "Stromal" = .5,
+                                               "Immune"  = .1,
+                                               "Normal"  = .1),
+                               noise_setting = 1.5,
+                               seed          = 1234 )
+
+```
+
+```{r}
+x.a <- melt(simresult.a[[1]])
+x.b <- melt(simresult.b[[1]])
+x.a$condition <- "a"
+x.b$condition <- "b"
+
+mydf <- rbind(x.a,x.b)
+mydf<- mydf[,-1]
+names(mydf) <- c("tissue","H.RMSE","condition")
+
+p <- ggplot(data = mydf,
+            aes(y = H.RMSE,
+                x= tissue))
+p <- p + geom_violin()
+p <- p + geom_jitter(width = 0.1)
+p <- p + facet_grid(~condition)
+print(p)
+```
+
+```{r}
+x.a <- melt(simresult.a[[4]])
+x.b <- melt(simresult.b[[4]])
+x.a$condition <- "a"
+x.b$condition <- "b"
+
+mydf <- rbind(x.a,x.b)
+mydf<- mydf[,-1]
+names(mydf) <- c("tissue","w_cos_dist","condition")
+
+p <- ggplot(data = mydf,
+            aes(y = w_cos_dist,
+                x= tissue))
+p <- p + geom_violin()
+p <- p + geom_jitter(width = 0.1)
+p <- p + facet_grid(~condition)
+print(p)
+```
+
+
+# low rearrange
+
+```{r}
+simresult.b <- simulate_and_test(A_tumor  = A[1:100,1:100],
+                               mu_tumor   = mu[1:100],
+                               num.sim    = 20,
+                               Samplesize  = 100,
+                               scaleFactor = 2,
+                               d.params    = c("Tumor"   = .3,
+                                               "Stromal" = .5,
+                                               "Immune"  = .1,
+                                               "Normal"  = .1),
+                               noise_setting = 1.5,
+                               seed          = 1234 )
+
+```
+
+```{r}
+x.a <- melt(simresult.a[[1]])
+x.b <- melt(simresult.b[[1]])
+x.a$condition <- "a"
+x.b$condition <- "b"
+
+mydf <- rbind(x.a,x.b)
+mydf<- mydf[,-1]
+names(mydf) <- c("tissue","H.RMSE","condition")
+
+p <- ggplot(data = mydf,
+            aes(y = H.RMSE,
+                x= tissue))
+p <- p + geom_violin()
+p <- p + geom_jitter(width = 0.1)
+p <- p + facet_grid(~condition)
+print(p)
+```
+
+```{r}
+x.a <- melt(simresult.a[[4]])
+x.b <- melt(simresult.b[[4]])
+x.a$condition <- "a"
+x.b$condition <- "b"
+
+mydf <- rbind(x.a,x.b)
+mydf<- mydf[,-1]
+names(mydf) <- c("tissue","w_cos_dist","condition")
+
+p <- ggplot(data = mydf,
+            aes(y = w_cos_dist,
+                x= tissue))
+p <- p + geom_violin()
+p <- p + geom_jitter(width = 0.1)
+p <- p + facet_grid(~condition)
+print(p)
+```
+
+# low sample size
+
+```{r}
+simresult.b <- simulate_and_test(A_tumor  = A[1:100,1:100],
+                               mu_tumor   = mu[1:100],
+                               num.sim    = 100,
+                               Samplesize  = 10,
+                               scaleFactor = 30,
+                               d.params    = c("Tumor"   = .3,
+                                               "Stromal" = .5,
+                                               "Immune"  = .1,
+                                               "Normal"  = .1),
+                               noise_setting = 1.5,
+                               seed          = 1234 )
+
+```
+
+```{r}
+x.a <- melt(simresult.a[[1]])
+x.b <- melt(simresult.b[[1]])
+x.a$condition <- "a"
+x.b$condition <- "b"
+
+mydf <- rbind(x.a,x.b)
+mydf<- mydf[,-1]
+names(mydf) <- c("tissue","H.RMSE","condition")
+
+p <- ggplot(data = mydf,
+            aes(y = H.RMSE,
+                x= tissue))
+p <- p + geom_violin()
+p <- p + geom_jitter(width = 0.1)
+p <- p + facet_grid(~condition)
+print(p)
+```
+
+```{r}
+x.a <- melt(simresult.a[[4]])
+x.b <- melt(simresult.b[[4]])
+x.a$condition <- "a"
+x.b$condition <- "b"
+
+mydf <- rbind(x.a,x.b)
+mydf<- mydf[,-1]
+names(mydf) <- c("tissue","w_cos_dist","condition")
+
+p <- ggplot(data = mydf,
+            aes(y = w_cos_dist,
+                x= tissue))
+p <- p + geom_violin()
+p <- p + geom_jitter(width = 0.1)
+p <- p + facet_grid(~condition)
+print(p)
+```
+
