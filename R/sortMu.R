@@ -7,7 +7,7 @@ sortMu = function(mu = 101-(1:100),
                   A = 1:100 %*% t(1:100),
                   scaleFactor = 10,
                   seed = 1234,
-                  verbose = TRUE)
+                  verbose = FALSE)
 {
   set.seed(seed)
   G = length(mu)

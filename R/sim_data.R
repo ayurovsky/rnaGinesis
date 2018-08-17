@@ -1,5 +1,5 @@
 #' Take in a single mu and A, and a mixture matrix H
-#' Return mixed expression
+#' Return mixed expression (after exponentiation)
 #'
 #' @export
 
@@ -45,7 +45,7 @@ sim_data = function(mu_tumor = 101-(1:100),
   # for each sample's mixture matrix
   # ... and a set of mvn params
   # ... simulate mixed expression
-  data = apply(H, 2, sim_data_1, mu, A)
+  data = apply(H, 2, sim_data_1, mu, A, seed)
   
   return(list(data, exp(mu)))
 }
