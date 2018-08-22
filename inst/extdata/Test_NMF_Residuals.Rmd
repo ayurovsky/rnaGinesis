@@ -1,0 +1,97 @@
+---
+title: "Demo"
+output: pdf_document
+---
+
+```{r}
+library(rnaGinesis)
+library(ggplot2)
+library(reshape)
+library(GGally)
+library(NMF)
+library(nnls)
+mu <- rnaGinesis::mu
+A <- rnaGinesis::A
+```
+
+# generate data
+
+```{r}
+ngenes <- 500;
+nsamples = 1000;
+simresult <- Complete_simulation(A_tumor  = A[1:ngenes,1:ngenes],
+                                 mu_tumor = mu[1:ngenes],
+                                 Samplesize    = nsamples,
+                                 scaleFactor   = 100,
+                                 d.params      = c("Tumor"   = .3,
+                                                   "Stroma" = .5,
+                                                   "Immune"  = .1,
+                                                   "Normal"  = .1),
+                                 noise_setting = 1.5,
+                                 seed          = 1234)
+data   <- simresult[[1]]
+W      <- simresult[[2]]
+H      <- simresult[[3]]
+rm("simresult")
+rm("mu")
+rm("A")
+```
+
+# Display data
+
+```{r}
+ggpairs(data = data.frame(t(H)))
+```
+
+```{r}
+ggpairs(data = as.data.frame(lapply(data.frame(W),log10)))
+```
+
+
+# Plain Residuals
+
+## perfect knowledge
+```{r}
+known.set <- 1:4
+nnls.H <- H[known.set,]
+nnls.resids.1 <- numeric(nsamples)
+nnls.resids.2 <- numeric(nsamples)
+
+for(i in 1:nsamples){
+  this_sample <- data[,i]
+  nnls.result <- nnls(A = W[,known.set],b = this_sample)
+  nnls.H[known.set,i] <- nnls.result$x
+  nnls.resids.1[i] <- sum((nnls.result$residuals[nnls.result$residuals>0]))
+
+}
+residuals.perfect.1 <- nnls.resids.1/ngenes
+
+```
+
+## imperfect knowledge
+```{r}
+known.set <- 1:3
+nnls.H <- H[known.set,]
+nnls.resids.1 <- numeric(nsamples)
+nnls.resids.2 <- numeric(nsamples)
+
+for(i in 1:nsamples){
+  this_sample <- data[,i]
+  nnls.result <- nnls(A = W[,known.set],b = this_sample)
+  nnls.H[known.set,i] <- nnls.result$x
+  nnls.resids.1[i] <- sum((nnls.result$residuals[nnls.result$residuals>0]))
+}
+residuals.imperfect.1 <- nnls.resids.1/ngenes
+
+```
+
+```{r}
+ggpairs(data = data.frame(t(rbind(H,nnls.H,residuals.imperfect.1))))
+
+```
+
+```{r}
+ggpairs(data = data.frame(residuals.perfect.1,
+                          residuals.imperfect.1,
+                          H[4,]),alpha = 0.2)
+```
