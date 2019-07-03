@@ -5,8 +5,8 @@
 \title{Description}
 \usage{
 simulate_and_test(A_tumor, mu_tumor, num.sim = 20, Samplesize = 100,
-  scaleFactor = 10, d.params = c(Tumor = 0.3, Stromal = 0.5, Immune = 0.1,
-  Normal = 0.1), noise_setting = 2, seed = 1234)
+  scaleFactor = 10, d.params = c(Tumor = 0.3, Stromal = 0.5, Immune =
+  0.1, Normal = 0.1), noise_setting = 2, seed = 1234)
 }
 \description{
 Description

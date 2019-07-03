@@ -3,12 +3,12 @@
 \name{sim_data}
 \alias{sim_data}
 \title{Take in a single mu and A, and a mixture matrix H
-Return mixed expression}
+Return mixed expression (after exponentiation)}
 \usage{
 sim_data(mu_tumor = 101 - (1:100), A_tumor = 1:100 \%*\% t(1:100),
   H = sim_H(), scaleFactor = 10, seed = 1234)
 }
 \description{
 Take in a single mu and A, and a mixture matrix H
-Return mixed expression
+Return mixed expression (after exponentiation)
 }

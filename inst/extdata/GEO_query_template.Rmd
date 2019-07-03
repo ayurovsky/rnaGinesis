@@ -1,0 +1,91 @@
+---
+title: "GSE_tutorial"
+author: "Luke Torre-Healy"
+date: "7/3/2019"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, collapse = T)
+library(GEOquery)
+```
+
+# Getting started
+
+Run install.dependencies.R, then build the package before you do anything. 
+
+Look for Build in the top right tab, click Install and Restart.
+
+## Query Geo using SOFT files
+
+Here is the most rigorous version of querying, I don't recommend using this approach. However, it might be nice to run once to see how a SOFT file is formatted and how long it takes. It's certainly less efficient than the second example. For now, I've set eval to FALSE to not waste time.
+
+```{r, eval = F}
+getGEOfile("GSE71729",
+           destdir = ".")
+
+gfile.s <- system.file("extdata", "GSE71729.soft.gz", package = "rnaGinesis")
+
+gset.s <- getGEO(filename = gfile.s,
+               GSEMatrix =FALSE, 
+               AnnotGPL=FALSE,
+               getGPL=FALSE)
+```
+
+The option below is much cleaner and quicker.
+
+```{r}
+gset <- getGEO(GEO = "GSE71729",
+               GSEMatrix =TRUE, 
+               AnnotGPL=FALSE,
+               getGPL=FALSE)
+# ---------------------------------------------
+class(gset)
+#its currently a list, we want the expression set. The line below reduces it to what we want
+gset <- gset$GSE71729_series_matrix.txt.gz
+# ----------------
+class(gset)
+```
+^ you can run getGEO with $GSE.... at the end once you know what it is. It's more compact for future people. I just don't know exactly which GSE you'll be using
+
+experimentData has info about where/who did the work, assayData should have counts, phenoData should have sample info. 
+sometimes these are poorly/incorrectly formatted, requires some searching. use GEOaccession (google) to find more specifics
+
+## Extract relevant data
+
+```{r, collapse = F}
+# ex has the counts, use exprs()
+ex <- exprs(gset)
+str(ex)
+# make a featInfo object that just has the rownames of ex, usually gene names or ensembl ids, etc
+featInfo <- data.frame(SYMBOL = rownames(ex))
+str(featInfo)
+```
+
+\newpage
+
+```{r}
+# phenoData has more info about the samples
+samps <-gset@phenoData
+str(samps)
+```
+
+## What to do with our extracted data
+
+We like to make lists with four headings, **$ex, $sampInfo, $metaData, and $featInfo**. Keeping them the same allows us to use prewritten codes for parsing and analysis
+
+```{r}
+Moffitt_data <- list()
+
+Moffitt_data$ex <- ex
+Moffitt_data$sampInfo <- samps
+Moffitt_data$metadata <- list(log.transformed = F)
+# This just indicates we have raw counts^
+Moffitt_data$featInfo <- featInfo
+```
+
+Now if you save the above list, its the cleaned, extracted data from the online portal ready to be manipulated.
+
+

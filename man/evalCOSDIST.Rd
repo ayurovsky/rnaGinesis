@@ -2,10 +2,10 @@
 % Please edit documentation in R/evalCOSDIST.R
 \name{evalCOSDIST}
 \alias{evalCOSDIST}
-\title{Description}
+\title{Compare two sets of column data (automatic matching)}
 \usage{
-evalCOSDIST(truth_mean, observed)
+evalCOSDIST(truth, observed)
 }
 \description{
-Description
+Compare two sets of column data (automatic matching)
 }

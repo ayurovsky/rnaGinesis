@@ -5,8 +5,8 @@
 \title{Take in a single Mu and A
 Return a single adjusted Mu and A}
 \usage{
-sortMu(mu = 101 - (1:100), A = 1:100 \%*\% t(1:100), scaleFactor = 10,
-  seed = 1234, verbose = TRUE)
+sortMu(mu = 101 - (1:100), A = 1:100 \%*\% t(1:100),
+  scaleFactor = 10, seed = 1234, verbose = FALSE)
 }
 \description{
 Take in a single Mu and A

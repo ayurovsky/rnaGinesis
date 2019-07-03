@@ -5,8 +5,8 @@
 \title{Take in direchelet parameters
 Return a mixture matrix}
 \usage{
-sim_H(S = 10, seed = 1234, d.params = c(Tumor = 0.3, Stromal = 0.5, Immune
-  = 0.1, Normal = 0.1))
+sim_H(S = 10, seed = 1234, d.params = c(Tumor = 0.3, Stromal = 0.5,
+  Immune = 0.1, Normal = 0.1))
 }
 \description{
 Take in direchelet parameters

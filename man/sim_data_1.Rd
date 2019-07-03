@@ -6,7 +6,7 @@
  use a single mixture and a set of mvn params 
  to simulate a single mixed sample}
 \usage{
-sim_data_1(h.i, mean, chol)
+sim_data_1(h.i, mean, chol, seed = 1234)
 }
 \description{
 Helper function that:

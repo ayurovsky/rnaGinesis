@@ -2,10 +2,10 @@
 % Please edit documentation in R/evalRMSE.R
 \name{evalRMSE}
 \alias{evalRMSE}
-\title{Description}
+\title{Compare two sets of column data (automatic matching)}
 \usage{
 evalRMSE(truth, observed)
 }
 \description{
-Description
+Compare two sets of column data (automatic matching)
 }

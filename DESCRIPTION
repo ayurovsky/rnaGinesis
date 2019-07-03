@@ -4,15 +4,13 @@ Title: Simulate gene expression data
 Version: 0.1.0
 Author: Richard Moffitt & Virginia Ma
 Maintainer: <richard.moffitt@stonybrook.edu>
-Description:  Simulate gene expression data
+Description: Simulate gene expression data
 License: MIT
 LazyData: TRUE
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.1
 Suggests: testthat
 Imports: RColorBrewer,
          ggplot2,
          gplots,
          plyr
-         
-
-         
+Encoding: UTF-8
