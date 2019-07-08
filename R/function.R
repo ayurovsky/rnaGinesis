@@ -39,7 +39,7 @@ parse <- function() {
   
   #-----------------------------save-----------------------------------
   
-  save(parsedGSE19830, file = "../data/datasetGSE19830.RData")
-  save(parsedGSE97284, file = "../data/datasetGSE97284.RData")
-  save(parsedGSE127472, file = "../data/datasetGSE127472.RData")
+  save(parsedGSE19830, file = "./data/datasetGSE19830.RData")
+  save(parsedGSE97284, file = "./data/datasetGSE97284.RData")
+  save(parsedGSE127472, file = "./data/datasetGSE127472.RData")
 }
