@@ -15,41 +15,78 @@ sim_data_1 = function(h.i, mean, chol,seed = 1234)
   
   set.seed(seed)
   numTypes = length(h.i)
-  if (numTypes == 2)
+  if (numTypes >= 2)
   {
-    W = sim_2type(mean, chol)
+    z_1 = as.matrix(rmvn(1, mean[,1], chol[[1]], isChol=TRUE))
+    z_2 = as.matrix(rmvn(1, mean[,2], chol[[2]], isChol=TRUE))
+    if (numTypes==2)
+      {
+         W = t(rbind(z_1, z_2))
+      }
   }
-  else if (numTypes == 3)
+  else if (numTypes >= 3)
   {
-    W = sim_3type(mean, chol)
+    z_3 = as.matrix(rmvn(1, mean[,3], chol[[3]], isChol=TRUE))
+    if (numTypes==3)
+      {
+        W = t(rbind(z_1, z_2, z_3))
+      }
   }
-  else if (numTypes == 4)
+  else if (numTypes >= 4)
   {
-    W = sim_4type(mean, chol)
+    z_4 = as.matrix(rmvn(1, mean[,4], chol[[4]], isChol=TRUE))
+    if (numTypes==4)
+      {
+        W = t(rbind(z_1, z_2, z_3, z_4))
+      }
   }
-  else if (numTypes == 5)
+  else if (numTypes >= 5)
   {
-    W = sim_5type(mean, chol)
+    z_5 = as.matrix(rmvn(1, mean[,5], chol[[5]], isChol=TRUE))
+    if (numTypes==5)
+      {
+        W = t(rbind(z_1, z_2, z_3, z_4, z_5))
+      }
   }
-  else if (numTypes == 6)
+  else if (numTypes >= 6)
   {
-    W = sim_6type(mean, chol)
+    z_6 = as.matrix(rmvn(1, mean[,6], chol[[6]], isChol=TRUE))
+    if (numTypes==6)
+      {
+        W = t(rbind(z_1, z_2, z_3, z_4, z_5, z_6))
+      }
   }
-  else if (numTypes == 7)
+  else if (numTypes >= 7)
   {
-    W = sim_7type(mean, chol)
+    z_7 = as.matrix(rmvn(1, mean[,7], chol[[7]], isChol=TRUE))
+    if (numTypes==7)
+      {
+        W = t(rbind(z_1, z_2, z_3, z_4, z_5, z_6, z_7))
+      }
   }
-  else if (numTypes == 8)
+  else if (numTypes >= 8)
   {
-    W = sim_8type(mean, chol)
+    z_8 = as.matrix(rmvn(1, mean[,8], chol[[8]], isChol=TRUE))
+    if (numTypes==8)
+      {
+        W = t(rbind(z_1, z_2, z_3, z_4, z_5, z_6, z_7, z_8))
+      }
   }
-  else if (numTypes == 9)
+  else if (numTypes >= 9)
   {
-    W = sim_9type(mean, chol)
+    z_9 = as.matrix(rmvn(1, mean[,9], chol[[9]], isChol=TRUE))
+    if (numTypes==9)
+      {
+        W = t(rbind(z_1, z_2, z_3, z_4, z_5, z_6, z_7, z_8, z_9))
+      }
   }
-  else if (numTypes == 10)
+  else if (numTypes >= 10)
   {
-    W = sim_10type(mean, chol)
+    z_10 = as.matrix(rmvn(1, mean[,10], chol[[10]], isChol=TRUE))
+    if (numTypes==10)
+      {
+        W = t(rbind(z_1, z_2, z_3, z_4, z_5, z_6, z_7, z_8, z_9, z_10))
+      }
   }
   else
   {
@@ -58,6 +95,6 @@ sim_data_1 = function(h.i, mean, chol,seed = 1234)
     else
       stop("Too many tissue types: maximum of ten types")
   }
-  
+  W = exp(W)
   return(W %*% h.i)
 }
