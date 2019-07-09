@@ -8,20 +8,56 @@
 
 sim_data_1 = function(h.i, mean, chol,seed = 1234)
 {
+  if (length(h.i)!=ncol(mean))
+  {
+    stop("Number of tissue types do not match for cell-specific proportions and gene expression")
+  }
+  
   set.seed(seed)
-  z_tumor  = rmvn(1, mean[,1], chol[[1]], isChol=TRUE)
-  z_stroma = rmvn(1, mean[,2], chol[[2]], isChol=TRUE)
-  z_immune = rmvn(1, mean[,3], chol[[3]], isChol=TRUE)
-  z_normal = rmvn(1, mean[,4], chol[[4]], isChol=TRUE)
-  
-  tumor = as.matrix(z_tumor)
-  stroma = as.matrix(z_stroma)
-  immune = as.matrix(z_immune)
-  normal = as.matrix(z_normal)
-  
-  W = t(rbind(tumor, stroma, immune, normal))
-  
-  W <- exp(W)
+  numTypes = length(h.i)
+  if (numTypes == 2)
+  {
+    W = sim_2type(mean, chol)
+  }
+  else if (numTypes == 3)
+  {
+    W = sim_3type(mean, chol)
+  }
+  else if (numTypes == 4)
+  {
+    W = sim_4type(mean, chol)
+  }
+  else if (numTypes == 5)
+  {
+    W = sim_5type(mean, chol)
+  }
+  else if (numTypes == 6)
+  {
+    W = sim_6type(mean, chol)
+  }
+  else if (numTypes == 7)
+  {
+    W = sim_7type(mean, chol)
+  }
+  else if (numTypes == 8)
+  {
+    W = sim_8type(mean, chol)
+  }
+  else if (numTypes == 9)
+  {
+    W = sim_9type(mean, chol)
+  }
+  else if (numTypes == 10)
+  {
+    W = sim_10type(mean, chol)
+  }
+  else
+  {
+    if (numTypes<2)
+      stop("Must have at least two tissue types")
+    else
+      stop("Too many tissue types: maximum of ten types")
+  }
   
   return(W %*% h.i)
 }
