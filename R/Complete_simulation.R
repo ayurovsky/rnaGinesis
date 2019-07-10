@@ -5,7 +5,7 @@
 Complete_simulation = function(A_tumor,
                                mu_tumor,
                                Samplesize  = 100,
-                               scaleFactor = 10,
+                               scaleFactor = rep(10, 3),
                                d.params    = c("Tumor"   = .3,
                                                "Stromal" = .5,
                                                "Immune"  = .1,

@@ -11,6 +11,10 @@ sim_H = function(S = 10,
                               "Immune"  = .1,
                               "Normal"  = .1))
 {
+   if (sum(d.params)!=1)
+  {
+    stop("proportions do not add up to 1")
+  }
   set.seed(seed)
   H = t(rdirichlet(S , d.params))
   rownames(H) = names(d.params)

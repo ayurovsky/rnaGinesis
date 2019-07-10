@@ -7,7 +7,7 @@ simulate_and_test = function(A_tumor,
                              mu_tumor,
                              num.sim     = 20,
                              Samplesize  = 100,
-                             scaleFactor = 10,
+                             scaleFactor = rep(10,3),
                              d.params    = c("Tumor"   = .3,
                                              "Stromal" = .5,
                                              "Immune"  = .1,
@@ -63,7 +63,7 @@ simulate_and_test = function(A_tumor,
     w_nmf = NMF_result[[1]]
     
     # globally rearrange NMF results to match truth
-    possible.perms = permutations(4, 4, c(1, 2, 3, 4))
+    possible.perms = permutations(ncol(w_nmf), ncol(w_nmf))
     cor_orders = apply(X = possible.perms, 1,
                        FUN=tot.cor, w_exp = W, w_obs = w_nmf)
     #plot(sort(cor_orders))
