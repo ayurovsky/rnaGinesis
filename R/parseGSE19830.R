@@ -9,13 +9,20 @@ parseGSE19830 <- function() {
                 GSEMatrix = TRUE, 
                 getGPL = FALSE)
   gse <- gse$GSE19830_series_matrix.txt.gz
-  expression <- exprs(gse)
-  sampleInfo <- gse@phenoData
-  featureInfo <- data.frame(SYMBOL = rownames(expression))
+  ex <- exprs(gse)
+  sampInfo <- gse@phenoData
+  featInfo <- data.frame(SYMBOL = rownames(expression))
   parsedGSE19830 <- list()
-  parsedGSE19830$expression <- exprs(gse)
-  parsedGSE19830$sampleInfo <- sampleInfo@data
-  parsedGSE19830$featureInfo <- data.frame(SYMBOL = rownames(expression))
+  parsedGSE19830$ex <- ex(gse)
+  parsedGSE19830$sampInfo <- sampInfo@data
+  parsedGSE19830$featInfo <- data.frame(SYMBOL = rownames(expression))
+  parsedGSE19830$metadata <- list(log.transformed = FALSE,
+                                   reference = "Shen-Orr SS, Tibshirani R, Khatri P, Bodian DL et al. Cell type-specific gene expression differences in complex tissues. Nat Methods 2010 Apr;7(4):287-9. PMID: 20208531",
+                                   accession = "GSE19830",
+                                   description = "30 mixed samples of liver, brain, and lung tissues in 10 different mixing proportions with three replicates",
+                                   survivalA = "None",
+                                   survivalB = "None"
+                              )
   
   save(parsedGSE19830, file = "./data/datasetGSE19830.RData")
 }
