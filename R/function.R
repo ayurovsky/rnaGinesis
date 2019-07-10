@@ -16,6 +16,7 @@ parseGSE19830 <- function() {
   parsedGSE19830$expression <- exprs(gse)
   parsedGSE19830$sampleInfo <- sampleInfo@data
   parsedGSE19830$featureInfo <- data.frame(SYMBOL = rownames(expression))
+  
 }
 
 #-----------------------------GSE97284-----------------------------------
