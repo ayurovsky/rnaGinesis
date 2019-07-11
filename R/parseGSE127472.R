@@ -1,9 +1,16 @@
+#' generate_data_set_list
+#'
+#' @export
+#' @import GEOquery
+#' @import Matrix
+#' @import readr
+
 #-----------------------------GSE127472-----------------------------------
 
 parseGSE127472 <- function() {
-  library(GEOquery)
-  library(Matrix)
-  library(readr)
+ # library(GEOquery)
+ # library(Matrix)
+ # library(readr)
   
   gse <- getGEO("GSE127472", 
                 GSEMatrix = TRUE, 
@@ -11,7 +18,7 @@ parseGSE127472 <- function() {
   gse <- gse$`GSE127472-GPL570_series_matrix.txt.gz`
   ex <- exprs(gse)
   sampInfo <- gse@phenoData
-  featInfo <- data.frame(SYMBOL = rownames(expression))
+  featInfo <- data.frame(SYMBOL = rownames(ex))
   parsedGSE127472 <- list()
   parsedGSE127472$ex <- ex
   parsedGSE127472$sampInfo <- sampInfo@data
@@ -21,8 +28,7 @@ parseGSE127472 <- function() {
                                    accession = "GSE12772",
                                    description = "single cell RNAseq PBMCs from a patient with non-small cell lung cancer",
                                    survivalA = "None",
-                                   survivalB = "None"
-                                   )
+                                   survivalB = "None")
   
   save(parsedGSE127472, file = "./data/datasetGSE127472.RData")
   return(NULL)
