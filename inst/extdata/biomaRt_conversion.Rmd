@@ -1,0 +1,100 @@
+---
+title: "accession key conversions"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+if (!require("devtools")) {
+    install.packages("devtools", repos="http://cran.rstudio.com/")
+}
+
+if (!require("BiocManager", quietly = TRUE)){
+    install.packages("BiocManager")
+}
+
+if(!require("yaml")){
+    install.packages("yaml")
+    library(yaml)
+}
+
+if(!require("stringi")){
+    install.packages("stringi")
+    library(stringi)
+}
+
+
+if(!require("matrixStats")){
+    install.packages("matrixStats")
+    library(matrixStats)
+}
+
+if(!require("DESeq2")){
+    BiocManager::install("DESeq2")
+    library(DESeq2)
+}
+if(!require("ggplot2")){
+    BiocManager::install("ggplot2")
+    library(ggplot2)
+}
+if(!require("ggpubr")){
+    BiocManager::install("ggpubr")
+    library(ggpubr)
+}
+if(!require("ggrepel")){
+    BiocManager::install("ggrepel")
+    library(ggrepel)
+}
+if(!require('apeglm')){
+    BiocManager::install('apeglm')
+    library(apeglm)
+}
+if(!require('reshape2')){
+    BiocManager::install('reshape2')
+    library(reshape2)
+}
+if(!require('GO.db')){
+    BiocManager::install('GO.db')
+    library(GO.db)
+}
+if(!require('biomaRt')){
+    BiocManager::install('biomaRt')
+    library(biomaRt)
+}
+if(!require('clusterProfiler')){
+    BiocManager::install('clusterProfiler')
+    library(clusterProfiler)
+}
+if(!require('fgsea')){
+    BiocManager::install('fgsea')
+    library(fgsea)
+}
+```
+
+```{r biomart conversion}
+mrt.m <-useMart(biomart = "ENSEMBL_MART_MOUSE", dataset = "mc57bl6nj_gene_ensembl")
+mrt.h <-useMart(biomart = "ensembl", dataset = "hsapiens_gene_ensembl")
+
+attr.m <- listAttributes(mrt.m)
+attr.h <- listAttributes(mrt.h)
+
+# commented code before is how you search for what you want, put something like "ensembl" or "symbol" in the quotes after grep
+#attr.h[grep("", x = attr.h$description, ignore.case = T),]
+
+m.list <- getBM(attributes = c("entrezgene","mgi_symbol"),
+                mart = mrt.m)
+h.list <- getBM(attributes = c("ensembl_gene_id","hgnc_symbol","entrezgene","go_id"),
+          mart = mrt.h)
+
+save(m.list, file = "../../data/mouse_conversion.RData")
+save(h.list, file = "../../data/human_conversion.RData")
+```
+
+
+```{r biomart with profiler}
+m_df <- msigdbr(species = "Mus musculus", category = "C5")
+m_df <- m_df[,c("gs_name", "gene_symbol")]
+
+enriched_df <- enricher(gene = "Hnf4a", TERM2GENE = m_df)
+```
+
+
