@@ -14,12 +14,15 @@ sim_data = function(mu_tumor = 101-(1:100),
   {
     stop("Error: parameters don't match in length")
   }
+  
+  numTypes = nrow(H)
+  
   if (numTypes<2)
       stop("Must have at least two tissue types")
   if (numTypes>10)
       stop("Too many tissue types: maximum of ten types")
   
-  numTypes = nrow(H)
+  
   
   if (numTypes>=2)
   {
