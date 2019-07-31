@@ -18,7 +18,7 @@ d.params = c("Tumor"   = .3,
              "Stromal" = .5,
              "Normal"  = .2)
 sim.data <- Complete_simulation(A_tumor = A,
-                               mu_tumor = mu,
+                               mu_tumor = mu, 
                                Samplesize = Samplesize,
                                scaleFactor = scaleFactor,
                                d.params = d.params,
