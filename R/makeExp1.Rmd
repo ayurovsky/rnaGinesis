@@ -44,7 +44,7 @@ experiment1 <- list()
 experiment1$ex <- ex
 experiment1$trueW <- trueW
 experiment1$trueH <- trueH
-experiment1$unmixed <- unmixed
+experiment1$unmixed <- unmixed 
 ```
 
 #### Saves experiment1 data to .RData file
