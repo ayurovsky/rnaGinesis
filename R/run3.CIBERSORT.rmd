@@ -1,0 +1,85 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+##First 5000 genes only due to size issues
+##full size may come with issues
+```{r}
+
+load("~/rnaGinesis/data/datasetGSE19830.RData")
+tab = parsedGSE19830
+# print(tab$expression)
+# head(tab$expression)
+# tab$sampleInfo@data$source_name_ch1
+# tab$expression[,1:3]
+t2 = tab$expression
+t2 <- t2[1:5000, ]
+x <- row.names(tab$expression)
+
+# length(x)
+liver <- vector()
+for(i in 1:31099) {
+  liver <- c(liver, mean(tab$expression[i,1:3]))
+}
+# length(liver)
+brain <- vector()
+for(i in 1:31099) {
+  brain <- c(brain, mean(tab$expression[i,4:6]))
+}
+
+lung <- vector()
+for(i in 1:31099) {
+  lung <- c(lung, mean(tab$expression[i,7:9]))
+}
+
+vec <- cbind(liver, brain, lung)
+rownames(vec) <- x
+
+exp3 <- vector()
+
+for(i in 1:31099) {
+  if (sum(vec[i, 1:3]) != 0) {
+    exp3 <- rbind(exp3, vec[i, ])
+  }
+}
+rownames(exp3) <- x
+
+exp3 <- exp3[1:5000, ]
+# print(exp3)
+# save(exp3, file = "data/exp3.RDat/a")
+write.table(exp3, "~/rnaGinesis/data/exp3_sigmat.txt", sep="\t")
+write.table(t2, "~/rnaGinesis/data/exp3_mixt.txt", sep="\t")
+
+
+```
+
+
+## Go to https://cibersortx.stanford.edu and run CIBERSORTX. You may have to create an account beforehand.
+## Remember to insert a name for the column that is the row names in both txt files 
+## Upload the signature matrix and the expression matrix. 
+## Run CIBERSORTX
+## download results
+## the W is "CIBERSORTx_JobN_GEP"
+## the H is "CIBERSORTx_JobN_Fractions"
+## move both files into the /data directory
+
+```{r}
+#reads W and H from files and saves as .RData file 
+exp3.CIBERSORT <- list()
+exp3.CIBERSORT$resultW <- as.matrix(read.delim("~/rnaGinesis/data/CIBERSORTxGEP_Job17_GEPs.txt", header = TRUE, sep = "\t"))
+col1 <- exp3.CIBERSORT$resultW[,1]
+exp3.CIBERSORT$resultW <- data.matrix(read.delim("~/rnaGinesis/data/CIBERSORTxGEP_Job17_GEPs.txt", header = TRUE, sep = "\t"))
+exp3.CIBERSORT$resultW <- exp3.CIBERSORT$resultW[,2:4]
+rownames(exp3.CIBERSORT$resultW) <- col1
+# exp3.CIBERSORT$W
+exp3.CIBERSORT$resultH <- as.matrix(read.delim("~/rnaGinesis/data/CIBERSORTxGEP_Job17_Fractions.txt", header = TRUE, sep = "\t"))
+col1 <- exp3.CIBERSORT$resultH[,1]
+exp3.CIBERSORT$resultH <- data.matrix(read.delim("~/rnaGinesis/data/CIBERSORTxGEP_Job17_Fractions.txt", header = TRUE, sep = "\t"))
+exp3.CIBERSORT$resultH <- exp3.CIBERSORT$resultH[,2:7]
+rownames(exp3.CIBERSORT$resultH) <- col1
+exp3.CIBERSORT$resultH <- t(exp3.CIBERSORT$resultH)
+# exp3.CIBERSORT$H
+save(exp3.CIBERSORT, file = "~/rnaGinesis/data/exp3.CIBERSORT.result.RData")
+```
+
