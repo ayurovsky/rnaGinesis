@@ -5,8 +5,8 @@
 \title{Description}
 \usage{
 Complete_simulation(A_tumor, mu_tumor, Samplesize = 100,
-  scaleFactor = 10, d.params = c(Tumor = 0.3, Stromal = 0.5, Immune =
-  0.1, Normal = 0.1), noise_setting = 2, seed = 1234)
+  scaleFactor = rep(10, 3), d.params = c(Tumor = 0.3, Stromal = 0.5,
+  Immune = 0.1, Normal = 0.1), noise_setting = 2, seed = 1234)
 }
 \description{
 Description

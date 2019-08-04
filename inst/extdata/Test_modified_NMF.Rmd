@@ -1,0 +1,289 @@
+---
+title: "Demo"
+output: pdf_document
+---
+
+```{r}
+library(rnaGinesis)
+library(gridExtra)
+library(grid)
+library(ggplot2)
+library(lattice)
+library(reshape)
+library(GGally)
+library(NMF)
+library(nnls)
+library(moments)
+mu <- rnaGinesis::mu
+A <- rnaGinesis::A
+```
+
+# Generate simulated data
+
+```{r}
+ngenes <- 500;
+nsamples = 1000;
+simresult <- Complete_simulation(A_tumor  = A[1:ngenes,1:ngenes],
+                                 mu_tumor = mu[1:ngenes],
+                                 Samplesize    = nsamples,
+                                 scaleFactor   = 100,
+                                 d.params      = c("Tumor"   = .3,
+                                                   "Stroma" = .5,
+                                                   "Immune"  = .1,
+                                                   "Normal"  = .1),
+                                 noise_setting = 1.5,
+                                 seed          = 1234)
+data   <- simresult[[1]]
+W      <- simresult[[2]]
+H      <- simresult[[3]]
+rm("simresult")
+rm("mu")
+rm("A")
+```
+
+# Display data properties
+
+```{r,fig.width=6,fig.height=8}
+ggpairs(data = data.frame(t(H)))
+```
+
+```{r,fig.width=6,fig.height=8}
+ggpairs(data = as.data.frame(lapply(data.frame(W),log10)))
+```
+
+# Define functions
+```{r}
+
+my_nnls <- function(W,X){
+  # X = WH
+  # solve for H  
+  pinv <- (solve(t(W)%*%W)%*%t(W))
+  H <- pinv%*%X
+  H[H<0] <- 0
+  residual <- X - (W %*% H)
+  
+  ngenes = dim(W)[1]
+  
+  skew <- skewness(residual)
+  kurt <- kurtosis(residual)
+  
+  residual.scaled  <- 
+    sum((residual[residual>0])) /
+    (ngenes * mean(mean(W)))
+  
+  return(list("H" = H,
+              "residual" = residual.scaled,
+              "skew" = skew,
+              "kurt" = kurt))
+}
+
+fuzzy_nmf <- function(W,X){
+  # X = WH
+  # solve for H  
+  
+  # start with nnls result, but don't let zeros happen
+  nnls.result <- my_nnls(W,X)
+  H <- nnls.result$H
+  
+  W.missing <- X - (W%*%H)
+  W.missing[W.missing < 0] <- 0
+  W.missing[W.missing < (mean(W.missing)*0.01)] <- (mean(W.missing)*0.01)
+  
+  H[H<mean(H)*0.01] <- mean(H)*0.01
+  
+  # add a dummy factor, populate it with garbage
+  ngenes = dim(W)[1]
+  nfactors = dim(W)[2]
+  W <- cbind(W , W.missing )
+  H <- rbind(H , nnls.result$residual)
+  H.original <- H
+  
+  residual <- X - (W %*% H)
+  exitcond <- TRUE
+  # writeLines("------------")
+  while(exitcond){
+    # multiplicative NMF update, modified
+    
+    # stay close to known H
+    H.new <- H *  ( t(W) %*% X ) / (t(W) %*% W %*% H )
+    # H[nfactors + 1] <- H.new[nfactors + 1]
+    # H[1:nfactors]   <- 0.5 * H.new[1:nfactors] + 0.5 * H.original[1:nfactors]
+    H <- 0.5 * H.new + 0.5 * H.original
+    
+    # keep known W fixed
+    W.new <- W *  ( X %*% t(H) ) / (W %*% H %*% t(H))
+    W[nfactors + 1] <- W.new[nfactors + 1]
+    
+    new.residual <- X - (W %*% H)
+    change = sum(abs(residual)) /sum(abs(new.residual))
+    residual <- new.residual
+    exitcond <- change > 1.001
+    
+    #print(H)
+  }
+  return(list("H" = H[1:nfactors],
+              "residual" = H[nfactors+1]))
+}
+```
+
+# Unmix single samples
+
+## perfect knowledge
+```{r}
+known.set <- 1:4
+nnls.H.perfect <- H[known.set,]
+nnls.resids.perfect <- numeric(nsamples)
+nnls.skew.perfect <- numeric(nsamples)
+nnls.kurt.perfect <- numeric(nsamples)
+
+nmf.H.perfect <- H[known.set,]
+nmf.resids.perfect  <- numeric(nsamples)
+
+for(i in 1:nsamples){
+  this_sample <- data[,i]
+  
+  nnls.result <- my_nnls(W[,known.set],this_sample)
+  nmf.result <- fuzzy_nmf(W[,known.set],this_sample)
+  
+  nnls.H.perfect[,i] <- nnls.result$H
+  nnls.resids.perfect[i] <- nnls.result$residual
+  nnls.skew.perfect[i] <- nnls.result$skew
+  nnls.kurt.perfect[i] <- nnls.result$kurt
+  
+  nmf.H.perfect[,i] <- nmf.result$H
+  nmf.resids.perfect[i] <- nmf.result$residual
+  
+}
+
+```
+
+## imperfect knowledge
+```{r}
+known.set <- 1:3
+nnls.H.incomplete <- H[known.set,]
+nnls.resids.incomplete <- numeric(nsamples)
+nnls.skew.incomplete <- numeric(nsamples)
+nnls.kurt.incomplete <- numeric(nsamples)
+
+nmf.H.incomplete <- H[known.set,]
+nmf.resids.incomplete <- numeric(nsamples)
+
+for(i in 1:nsamples){
+  this_sample <- data[,i]
+  
+  nnls.result <- my_nnls(W[,known.set],this_sample)
+  nmf.result <- fuzzy_nmf(W[,known.set],this_sample)
+  
+  nnls.H.incomplete[,i] <- nnls.result$H
+  nnls.resids.incomplete[i] <- nnls.result$residual
+  nnls.skew.incomplete[i] <- nnls.result$skew
+  nnls.kurt.incomplete[i] <- nnls.result$kurt
+  
+  nmf.H.incomplete[,i] <- nmf.result$H
+  nmf.resids.incomplete[i] <- nmf.result$residual
+  
+}
+
+```
+
+# Compare resutls
+
+## truth versus nnls incomplete
+```{r,fig.width=6,fig.height=8}
+ggpairs(data = data.frame(t(rbind(H,
+                                  nnls.H.incomplete,
+                                  nnls.resids.incomplete))))
+
+```
+
+## truth versus nmf imperfect
+```{r,fig.width=6,fig.height=8}
+ggpairs(data = data.frame(t(rbind(H,
+                                  nmf.H.incomplete,
+                                  nmf.resids.incomplete))))
+
+```
+
+
+## comparison of residuals
+```{r,fig.width=6,fig.height=8}
+ggpairs(data = data.frame(nnls.resids.perfect,
+                          nnls.resids.incomplete,
+                          nmf.resids.perfect,
+                          nmf.resids.incomplete,
+                          H[4,]))
+```
+
+## comparison of gaussianity
+```{r,fig.width=6,fig.height=8}
+ggpairs(data = data.frame(nnls.resids.perfect,
+                          nnls.skew.perfect,
+                          nnls.kurt.perfect,
+                          nnls.resids.incomplete,
+                          nnls.skew.incomplete,
+                          nnls.kurt.incomplete,
+                          H[4,]))
+```
+
+## Correlation to unknown
+```{r,fig.width=6,fig.height=8}
+my_df <- data.frame(nnls.resids.incomplete,
+                    nmf.resids.incomplete,
+                    truth = H[4,])
+my_df <- melt(my_df,id.vars = "truth")
+p <- ggplot(data = my_df, aes(y = truth,x = value))
+p <- p + facet_grid(facets = variable ~ .)
+p <- p + geom_point()
+p <- p + geom_smooth(method = "glm",formula = y ~ x -1)
+print(p)
+
+```
+
+## predictive power nnls metrics
+```{r,fig.width=6,fig.height=8}
+my_df <- data.frame(nnls.resids.perfect,
+                    nnls.resids.incomplete,
+                    bigh4 = cut(H[4,],breaks = c(0, 0.1, 0.5 ,1)))
+my_df <- melt(my_df,id.vars = "bigh4")
+p1 <- ggplot(data = my_df, aes(x = value,color = bigh4))
+p1 <- p1 + facet_grid(facets = variable ~ .)
+p1 <- p1 + geom_density()
+p1 <- p1 + labs(x = "resids")
+
+my_df <- data.frame(nnls.skew.perfect,
+                    nnls.skew.incomplete,
+                    bigh4 = cut(H[4,],breaks = c(0, 0.1, 0.5 ,1)))
+my_df <- melt(my_df,id.vars = "bigh4")
+p2 <- ggplot(data = my_df, aes(x = value,color = bigh4))
+p2 <- p2 + facet_grid(facets = variable ~ .)
+p2 <- p2 + geom_density()
+p2 <- p2 + labs(x = "skew")
+
+my_df <- data.frame(nnls.kurt.perfect,
+                    nnls.kurt.incomplete,
+                    bigh4 = cut(H[4,],breaks = c(0, 0.1, 0.5 ,1)))
+my_df <- melt(my_df,id.vars = "bigh4")
+p3 <- ggplot(data = my_df, aes(x = value,color = bigh4))
+p3 <- p3 + facet_grid(facets = variable ~ .)
+p3 <- p3 + geom_density()
+p3 <- p3 + labs(x = "kurtosis")
+
+grid.arrange(p1,p2,p3)
+
+```
+
+
+## predictive power nmf
+```{r,fig.width=6,fig.height=8}
+my_df <- data.frame(nnls.resids.perfect,
+                    nnls.resids.incomplete,
+                    nmf.resids.perfect,
+                    nmf.resids.incomplete,
+                    bigh4 = cut(H[4,],breaks = c(0, 0.1, 0.5 ,1)))
+my_df <- melt(my_df,id.vars = "bigh4")
+p <- ggplot(data = my_df, aes(x = value,color = bigh4))
+p <- p + facet_grid(facets = variable ~ .)
+p <- p + geom_density()
+print(p)
+
+```
