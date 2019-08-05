@@ -12,15 +12,25 @@ load("~/rnaGinesis/data/exp1.RData")
 sig_mat = experiment1$unmixed
 #sig_mat = cbind(sig_mat[[1]], sig_mat[[2]], sig_mat[[3]])
 mixt = experiment1$ex
-sig_mat1 <- as.matrix(sig_mat)
 rownames(mixt) <- c()
 rownames(sig_mat) <- c()
-# sig_mat
+sig_mat
 # save(sig_mat, file = "~/rnaGinesis/data/exp1_sigmat.txt")
 write.table(sig_mat, "~/rnaGinesis/data/exp1_sigmat.txt", sep="\t")
 write.table(mixt, "~/rnaGinesis/data/exp1_mixt.txt", sep="\t")
 # save(mixt, file = "~/rnaGinesis/data/exp1_mixt.txt")
 ```
+
+```{r}
+q <- vector()
+for(i in 1:1000) {
+  q <- cbind(q, i)
+}
+rownames(q) <- c()
+# print(c)
+write.table(q, "~/rnaGinesis/data/exp1_subset.txt", sep="\t")
+```
+
 
 ## Go to https://cibersortx.stanford.edu and run CIBERSORTX. You may have to create an account beforehand.
 ## Remember to insert a name for the column that is the row names in both txt files 
@@ -34,15 +44,15 @@ write.table(mixt, "~/rnaGinesis/data/exp1_mixt.txt", sep="\t")
 ```{r}
 #reads W and H from files and saves as .RData file 
 exp1.CIBERSORT <- list()
-exp1.CIBERSORT$resultW <- as.matrix(read.delim("~/rnaGinesis/data/CIBERSORTxGEP_Job10_GEPs.txt", header = TRUE, sep = "\t"))
+exp1.CIBERSORT$resultW <- as.matrix(read.delim("~/rnaGinesis/data/CIBERSORTxGEP_Job18_GEPs.txt", header = TRUE, sep = "\t"))
 col1 <- exp1.CIBERSORT$resultW[,1]
-exp1.CIBERSORT$resultW <- data.matrix(read.delim("~/rnaGinesis/data/CIBERSORTxGEP_Job10_GEPs.txt", header = TRUE, sep = "\t"))
+exp1.CIBERSORT$resultW <- data.matrix(read.delim("~/rnaGinesis/data/CIBERSORTxGEP_Job18_GEPs.txt", header = TRUE, sep = "\t"))
 exp1.CIBERSORT$resultW <- exp1.CIBERSORT$resultW[,2:4]
 rownames(exp1.CIBERSORT$resultW) <- col1
 # exp1.CIBERSORT$W
-exp1.CIBERSORT$resultH <- as.matrix(read.delim("~/rnaGinesis/data/CIBERSORTxGEP_Job10_Fractions.txt", header = TRUE, sep = "\t"))
+exp1.CIBERSORT$resultH <- as.matrix(read.delim("~/rnaGinesis/data/CIBERSORTxGEP_Job18_Fractions.txt", header = TRUE, sep = "\t"))
 col1 <- exp1.CIBERSORT$resultH[,1]
-exp1.CIBERSORT$resultH <- data.matrix(read.delim("~/rnaGinesis/data/CIBERSORTxGEP_Job10_Fractions.txt", header = TRUE, sep = "\t"))
+exp1.CIBERSORT$resultH <- data.matrix(read.delim("~/rnaGinesis/data/CIBERSORTxGEP_Job18_Fractions.txt", header = TRUE, sep = "\t"))
 exp1.CIBERSORT$resultH <- exp1.CIBERSORT$resultH[,2:7]
 rownames(exp1.CIBERSORT$resultH) <- col1
 exp1.CIBERSORT$resultH <- t(exp1.CIBERSORT$resultH)
