@@ -42,7 +42,6 @@ exp1.CIBERSORT$resultH <- data.matrix(read.delim("~/rnaGinesis/data/CIBERSORTxGE
 exp1.CIBERSORT$resultH <- exp1.CIBERSORT$resultH[,2:7]
 rownames(exp1.CIBERSORT$resultH) <- col1
 exp1.CIBERSORT$resultH <- t(exp1.CIBERSORT$resultH)
-save(exp1.CIBERSORT, file = "~/rnaGinesis/data/exp1.CIBERSORT.result.RData")
 
 # exp1.CIBERSORT$W
 exp1.CIBERSORT$resultW <- as.matrix(read.delim("~/rnaGinesis/data/CIBERSORTxGEP_Job10_GEPs.txt", header = TRUE, sep = "\t"))
@@ -51,6 +50,8 @@ exp1.CIBERSORT$resultW <- data.matrix(read.delim("~/rnaGinesis/data/CIBERSORTxGE
 exp1.CIBERSORT$resultW <- exp1.CIBERSORT$resultW[,2:4]
 rownames(exp1.CIBERSORT$resultW) <- col1
 exp1.CIBERSORT$resultW <- lapply(seq_len(ncol(exp1.CIBERSORT$resultH)), function(X) exp1.CIBERSORT$resultW)
+
+save(exp1.CIBERSORT, file = "~/rnaGinesis/data/exp1.CIBERSORT.result.RData")
 
 ```
 
