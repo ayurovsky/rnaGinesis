@@ -1,8 +1,9 @@
-#' @title 
+#' Runs NMF on mixture data and obtains result W, result H
+#' 
 #' @export
 #' @import NMF
 
-# Runs NMF on mixture data and obtains result W, result H
+
 runNMF <- function(mixture, rank) {
   # library(NMF)
   
