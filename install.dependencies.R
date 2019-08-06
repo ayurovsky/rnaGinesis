@@ -20,3 +20,6 @@ if (!require("BiocManager")) {
 if (!require("GEOquery")) {
    BiocManager::install("GEOquery")
 }
+if (!require("DeMixT")) {
+  BiocManager::install("DeMixT")
+}

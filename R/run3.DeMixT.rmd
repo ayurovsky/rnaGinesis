@@ -30,6 +30,7 @@ sig2$ex = as.matrix(dat$expression[, 4:6])
 sig2$featInfo = seq(1, dim(sig2$ex)[1])
 sig2$sampInfo = seq(1, dim(sig2$ex)[2])
   
+View(sig2)
 
 # mixt = experiment1$ex
 # row.names(mixt) <- as.numeric(row.names(mixt))
@@ -38,38 +39,28 @@ sig2$sampInfo = seq(1, dim(sig2$ex)[2])
 ```
 
 ```{r}
-if (!requireNamespace("BiocManager", quietly = TRUE))
-  install.packages("BiocManager")
-BiocManager::install("DeMixT")
-library(DeMixT)
-
-```
-
-
-
-
-
-
-
-```{r}
 library(SummarizedExperiment)
-mixt <- convert_to_SummarizedExperiment(experiment1)
+mixt <- convert_to_SummarizedExperiment(dat)
 sig3 <- convert_to_SummarizedExperiment(sig1)
-sig3
 sig4 <- convert_to_SummarizedExperiment(sig2)
-```
 
+# exponentiates the counts
+assays(mixt)$expression <- exp(assays(mixt)$expression)
+assays(sig3)$expression <- exp(assays(sig3)$expression)
+assays(sig4)$expression <- exp(assays(sig4)$expression)
 
-```{r}
-res <- DeMixT(data.Y = mixt,
-              data.comp1 = sig3,
-              data.comp2 = sig4,
-              if.filter = FALSE,
-              output.more.info = TRUE)
-SummarizedExperiment::assays(sig3)[[1]]
-length(unique(c(1, 1)))
-test.data1.comp1@assays@.xData$data@listData$counts
-# SummarizedExlperiment::assays(sig3)[[1]]
-# d <- cbind(SummarizedExperiment::assays(mixt)[[1]], SummarizedExperiment::assays(sig3)[[1]], SummarizedExperiment::assays(sig4)[[1]])
+# calculates rowMean differentials
+diff <- abs(rowMeans(assays(sig3)$expression) - rowMeans(assays(sig4)$expression))
+
+# pick top n genes
+top_n <- head(order(diff, decreasing = T), n = 80)
+
+# run DeMixT -- by subsetting in the function you save memory
+library(DeMixT)
+res <- DeMixT(data.Y = mixt[top_n],
+              data.comp1 = sig3[top_n],
+              data.comp2 = sig4[top_n],
+              if.filter = F,
+              output.more.info = T)
 ```
 
