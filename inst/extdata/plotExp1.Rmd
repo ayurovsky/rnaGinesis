@@ -1,0 +1,96 @@
+---
+title: "plotExp1"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+### Makes plots to evaluate deconvolution methods on Experiment 1 simulated data
+
+#### Obtain trueH, trueW and resultH, resultW from each deconvolution method
+```{r}
+# Obtains trueW, trueH from exp1.RData
+load("~/rnaGinesis/rnaGinesis/data/exp1.RData")
+trueW <- experiment1$trueW
+trueH <- experiment1$trueH
+
+# Obtains resultW, resultH from NMF and rearranges them to match trueW, trueH ordering
+load("~/rnaGinesis/rnaGinesis/data/exp1.NMF.result.RData")
+exp1.NMF <- rearrange(exp1.NMF, experiment1)
+#resultW <- matrix(runif(15000),
+                  #ncol = 3)
+#resultW <- lapply(seq_len(ncol(resultH.NMF)), function(X) resultW) 
+resultW.NMF <- exp1.NMF[[1]]
+resultH.NMF <- exp1.NMF[[2]]
+
+# Obtains resultW, resultH from DeMixT and rearranges them to match trueW, trueH ordering
+load("~/rnaGinesis/rnaGinesis/data/exp1.DeMixT.result.RData")
+exp1.DeMixT <- rearrange(exp1.DeMixT)
+resultW.DeMixT <- exp1.DeMixT[[1]]
+resultH.DeMixT <- exp1.DeMixT[[2]]
+
+# Obtains resultW, resultH from CIBERSORT and rearranges them to match trueW, trueH ordering
+load("~/rnaGinesis/rnaGinesis/data/exp1.CIBERSORT.result.RData")
+exp1.CIBERSORT <- rearrange(exp1.CIBERSORT, experiment1)
+resultW.CIBERSORT <- exp1.CIBERSORT[[1]]
+resultH.CIBERSORT <- exp1.CIBERSORT[[2]]
+```
+
+#### Creates H.RMSE with RMSE between true props and estimated props across all samples for each deconvolution method
+```{r}
+# Normalizes resultH so that proportions sum to 1
+resultH.NMF <- apply(resultH.NMF, 2, FUN = sum_to_1)
+resultH.CIBERSORT <- apply(resultH.CIBERSORT, 2, FUN = sum_to_1)
+
+# Obtains RMSE for each sample between true proportions and estimated proportions
+H.RMSE <- makeH.RMSE(trueH, resultH.NMF, resultH.CIBERSORT)
+```
+
+#### Graphs violin plot with H.RMSE values from each deconvolution method
+```{r}
+# melts H.RMSE into dataframe with two variables, method (1 = CIBERSORT, 2 = NMF) and H.RMSE across all samples for each deconvolution method 
+mydf <- reshape2::melt(H.RMSE)
+mydf <- mydf[,-1]
+names(mydf) <- c("method", "H_RMSE") 
+
+# plots H.RMSE between true proportions and estimated proportions in each sample based on deconvolution method
+p <- ggplot2::ggplot(data = mydf, ggplot2::aes(y = H_RMSE, x= method, fill = method))
+p <- p + ggplot2::geom_violin()
+p <- p + ggplot2::geom_jitter(width = 0.1, height = 0) + ggplot2::ylim(0,1) 
+p <- p + ggplot2::labs(title="Violin Plots of Root Mean Squared Error (RMSE) for Proportions",
+                       x = "Deconvolution Method",
+                       y = "H_RMSE")
+p <- p + ggplot2::theme(axis.title.x = ggplot2::element_text(size = 40)) 
+p <- p +  ggplot2::theme(axis.title.y = ggplot2::element_text(size = 40)) 
+p <- p +  ggplot2::theme(axis.text = ggplot2::element_text(size=30))
+
+print(p)
+```
+
+#### Creates W.COSDIST with COSDIST between true cell-type specific gene expression profiles and estimated gene expression profiles for each sample
+```{r}
+#W.RMSE <- makeW.RMSE(trueW, resultW.NMF, resultW.CIBERSORT)
+
+W.COSDIST <- makeW_COSDIST(trueW, resultW.NMF, resultW.CIBERSORT)
+#W.COSDIST <- makeW_COSDIST(trueW, resultW)
+```
+
+#### Graphs violin plots with W.COSDIST values from each deconvolution method
+```{r}
+# melts W.COSDIST into dataframe with two variables, method (1 = CIBERSORT, 2 = NMF) and W.COSDIST across all samples for each deconvolution method 
+mydf2 <- reshape2::melt(W.COSDIST)
+mydf2 <- mydf2[,-1]
+
+names(mydf2) <- c("method", "W_COSDIST") 
+
+# plots W.COSDIST between true W and estimated W in each sample based on deconvolution method
+p2 <- ggplot2::ggplot(data = mydf2, ggplot2::aes(y = W_COSDIST, x= method, fill = method))
+p2 <- p2 + ggplot2::geom_violin()
+p2 <- p2 + ggplot2::geom_jitter(width = 0.1, height = 0) + ggplot2::ylim(0,1.5) 
+p2 <- p2 + ggplot2::labs(title="Violin Plots of Cosine Distance (COSDIST) for Gene Expression",x = "Deconvolution Method", y = "W_COSDIST") + ggplot2::theme(axis.title.x = ggplot2::element_text(size = 40)) + ggplot2::theme(axis.title.y = ggplot2::element_text(size = 40)) + ggplot2::theme(axis.text=ggplot2::element_text(size=30))
+print(p2)
+```
