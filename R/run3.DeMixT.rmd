@@ -1,0 +1,75 @@
+---
+title: "run1.DeMixT"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r}
+load("~/rnaGinesis/data/datasetGSE19830.RData")
+dat <- parsedGSE19830
+typeof(dat$ex)
+dat$sampInfo = seq(1, dim(dat$expression)[2])
+dat$featInfo = seq(1, dim(dat$expression)[1])
+dat$expression <- as.matrix(dat$expression)
+
+
+
+load("~/rnaGinesis/data/exp3.RData")
+sig1 = list()
+sig1$ex = as.matrix(dat$expression[, 1:3])
+sig1$featInfo = seq(1, dim(sig1$ex)[1])
+sig1$sampInfo = seq(1, dim(sig1$ex)[2])
+
+sig2 = list()
+sig2$ex = as.matrix(dat$expression[, 4:6])
+sig2$featInfo = seq(1, dim(sig2$ex)[1])
+sig2$sampInfo = seq(1, dim(sig2$ex)[2])
+  
+
+# mixt = experiment1$ex
+# row.names(mixt) <- as.numeric(row.names(mixt))
+# row.names(sig_mat_2) <- as.numeric(row.names(sig_mat_2))
+
+```
+
+```{r}
+if (!requireNamespace("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+BiocManager::install("DeMixT")
+library(DeMixT)
+
+```
+
+
+
+
+
+
+
+```{r}
+library(SummarizedExperiment)
+mixt <- convert_to_SummarizedExperiment(experiment1)
+sig3 <- convert_to_SummarizedExperiment(sig1)
+sig3
+sig4 <- convert_to_SummarizedExperiment(sig2)
+```
+
+
+```{r}
+res <- DeMixT(data.Y = mixt,
+              data.comp1 = sig3,
+              data.comp2 = sig4,
+              if.filter = FALSE,
+              output.more.info = TRUE)
+SummarizedExperiment::assays(sig3)[[1]]
+length(unique(c(1, 1)))
+test.data1.comp1@assays@.xData$data@listData$counts
+# SummarizedExlperiment::assays(sig3)[[1]]
+# d <- cbind(SummarizedExperiment::assays(mixt)[[1]], SummarizedExperiment::assays(sig3)[[1]], SummarizedExperiment::assays(sig4)[[1]])
+```
+
