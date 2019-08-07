@@ -1,4 +1,6 @@
-# Helper method to rearrange results to match truths
+#' Helper method to rearrange results to match truths
+#'
+#' @export
 
 rearrangeResult <- function(trueH, resultH, trueW, resultW) {
   # globally rearrange NMF results to match truth
@@ -8,6 +10,7 @@ rearrangeResult <- function(trueH, resultH, trueW, resultW) {
   
   #plot(sort(cor_orders))
   best = possible.perms[which(cor_orders==max(cor_orders)),]
+  print(best)
   resultW = resultW[,best]
   resultH = resultH[best,]
   
