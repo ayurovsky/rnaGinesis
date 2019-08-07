@@ -1,0 +1,29 @@
+---
+title: "run2.NMF"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+### Runs NMF on expression matrix from scRNA-seq mixture data saved in exp2.RData, saves resultW and resultH to exp2.NMF.result.RData
+
+#### Loads exp2.RData with list of simulated mixture data, trueH, trueW, unmixed data/signature matrices
+```{r}
+load("~/rnaGinesis/rnaGinesis/data/exp2.RData")
+```
+
+#### Runs NMF on scRNA-seq mixture data and obtains resultW, resultH
+```{r}
+mixture <- experiment2$ex
+# Calls helper method runNMF to run NMF on mixture 
+exp2.NMF <- runNMF(mixture, rank = 3)
+```
+
+#### Saves results from NMF to .RData file
+```{r}
+save(exp2.NMF, file = "~/rnaGinesis/rnaGinesis/data/exp2.NMF.result.RData")
+```

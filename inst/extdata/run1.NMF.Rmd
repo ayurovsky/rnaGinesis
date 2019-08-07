@@ -1,0 +1,29 @@
+---
+title: "run1.NMF"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+### Runs NMF on expression matrix from simulated data saved in exp1.RData, saves resultW and resultH to exp1.NMF.result.RData
+
+#### Loads exp1.RData with list of simulated mixture data, trueH, trueW, unmixed data/signature matrices
+```{r}
+load("~/Desktop/stonybrook/simons/moffitt/src/pdac/data/exp1_medium_noise.RData")
+```
+
+#### Runs NMF on simulated mixture data and obtains resultW, resultH
+```{r}
+mixture <- experiment1$ex
+# Calls helper method runNMF to run NMF on mixture 
+exp1.NMF <- runNMF(mixture, rank = 3)
+```
+
+#### Saves results from NMF to .RData file
+```{r}
+save(exp1.NMF, file = "/Users/anandbanwasi/Desktop/stonybrook/simons/moffitt/src/pdac/data/exp1_medium_noise.NMF.result.RData")
+```
