@@ -1,0 +1,57 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+load("~/rnaGinesis/data/datasetGSE19830.RData")
+tab = parsedGSE19830
+# tab$sampleInfo@data$characteristics_ch1
+# head(tab$expression)
+# tab$sampleInfo@data$source_name_ch1
+# tab$expression[,1:3]
+w <- as.matrix(tab$sampleInfo@data$source_name_ch1)
+h = matrix(nrow = 42, ncol = 3)
+for (i in 1:42) {
+  h[i,] <- (as.numeric(strsplit(as.character(w[i][1]), split=" ")[[1]][c(1, 5, 9)]))
+}
+h <- h/100
+h 
+w[1]
+
+x <- row.names(tab$expression)
+liver <- vector()
+for(i in 1:31099) {
+  liver <- c(liver, mean(tab$expression[i,1:3]))
+}
+
+brain <- vector()
+for(i in 1:31099) {
+  brain <- c(brain, mean(tab$expression[i,4:6]))
+}
+
+lung <- vector()
+for(i in 1:31099) {
+  lung <- c(lung, mean(tab$expression[i,7:9]))
+}
+
+vec <- cbind(liver, brain, lung)
+row.names(vec) <- x
+experiment3 <- list()
+experiment3$ex <- as.matrix(parsedGSE19830$expression)
+experiment3$unmixed <- as.data.frame(vec)
+experiment3$trueH <- h
+experiment3$trueW <- experiment3$unmixed
+# vec
+# vec <- as.matrix(vec[which(vec != NULL),])
+# exp3 <- as.data.frame(as.matrix(vec[which(vec != 0),]))
+print(experiment3)
+save(experiment3, file = "~/rnaGinesis/data/exp3.RData")
+
+# 
+# print(mean(tab$expression[,1]))
+# print(mean(tab$expression[,2]))
+# print(mean(tab$expression[,3]))
+```
+

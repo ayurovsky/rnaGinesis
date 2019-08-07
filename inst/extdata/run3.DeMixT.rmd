@@ -1,0 +1,66 @@
+---
+title: "run1.DeMixT"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r}
+load("~/rnaGinesis/data/datasetGSE19830.RData")
+dat <- parsedGSE19830
+typeof(dat$ex)
+dat$sampInfo = seq(1, dim(dat$expression)[2])
+dat$featInfo = seq(1, dim(dat$expression)[1])
+dat$expression <- as.matrix(dat$expression)
+
+
+
+load("~/rnaGinesis/data/exp3.RData")
+sig1 = list()
+sig1$ex = as.matrix(dat$expression[, 1:3])
+sig1$featInfo = seq(1, dim(sig1$ex)[1])
+sig1$sampInfo = seq(1, dim(sig1$ex)[2])
+
+sig2 = list()
+sig2$ex = as.matrix(dat$expression[, 4:6])
+sig2$featInfo = seq(1, dim(sig2$ex)[1])
+sig2$sampInfo = seq(1, dim(sig2$ex)[2])
+  
+View(sig2)
+
+# mixt = experiment1$ex
+# row.names(mixt) <- as.numeric(row.names(mixt))
+# row.names(sig_mat_2) <- as.numeric(row.names(sig_mat_2))
+
+```
+
+```{r}
+library(SummarizedExperiment)
+mixt <- convert_to_SummarizedExperiment(dat)
+sig3 <- convert_to_SummarizedExperiment(sig1)
+sig4 <- convert_to_SummarizedExperiment(sig2)
+
+# exponentiates the counts
+assays(mixt)$expression <- exp(assays(mixt)$expression)
+assays(sig3)$expression <- exp(assays(sig3)$expression)
+assays(sig4)$expression <- exp(assays(sig4)$expression)
+
+# calculates rowMean differentials
+diff <- abs(rowMeans(assays(sig3)$expression) - rowMeans(assays(sig4)$expression))
+
+# pick top n genes
+top_n <- head(order(diff, decreasing = T), n = 80)
+
+# run DeMixT -- by subsetting in the function you save memory
+library(DeMixT)
+res <- DeMixT(data.Y = mixt[top_n],
+              data.comp1 = sig3[top_n],
+              data.comp2 = sig4[top_n],
+              if.filter = F,
+              output.more.info = T)
+```
+
