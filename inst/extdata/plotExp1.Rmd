@@ -28,10 +28,10 @@ resultW.NMF <- exp1.NMF[[1]]
 resultH.NMF <- exp1.NMF[[2]]
 
 # Obtains resultW, resultH from DeMixT and rearranges them to match trueW, trueH ordering
-load("~/rnaGinesis/rnaGinesis/data/exp1.DeMixT.result.RData")
-exp1.DeMixT <- rearrange(exp1.DeMixT)
-resultW.DeMixT <- exp1.DeMixT[[1]]
-resultH.DeMixT <- exp1.DeMixT[[2]]
+# load("~/rnaGinesis/rnaGinesis/data/exp1.DeMixT.result.RData")
+# exp1.DeMixT <- rearrange(exp1.DeMixT)
+# resultW.DeMixT <- exp1.DeMixT[[1]]
+# resultH.DeMixT <- exp1.DeMixT[[2]]
 
 # Obtains resultW, resultH from CIBERSORT and rearranges them to match trueW, trueH ordering
 load("~/rnaGinesis/rnaGinesis/data/exp1.CIBERSORT.result.RData")
@@ -46,7 +46,7 @@ resultH.CIBERSORT <- exp1.CIBERSORT[[2]]
 resultH.NMF <- apply(resultH.NMF, 2, FUN = sum_to_1)
 resultH.CIBERSORT <- apply(resultH.CIBERSORT, 2, FUN = sum_to_1)
 
-# Obtains RMSE for each sample between true proportions and estimated proportions
+# Obtains RMSE for each sample between true proportions and estimated proportions for all deconvolution methods
 H.RMSE <- makeH.RMSE(trueH, resultH.NMF, resultH.CIBERSORT)
 ```
 
@@ -90,7 +90,21 @@ names(mydf2) <- c("method", "W_COSDIST")
 # plots W.COSDIST between true W and estimated W in each sample based on deconvolution method
 p2 <- ggplot2::ggplot(data = mydf2, ggplot2::aes(y = W_COSDIST, x= method, fill = method))
 p2 <- p2 + ggplot2::geom_violin()
-p2 <- p2 + ggplot2::geom_jitter(width = 0.1, height = 0) + ggplot2::ylim(0,1.5) 
-p2 <- p2 + ggplot2::labs(title="Violin Plots of Cosine Distance (COSDIST) for Gene Expression",x = "Deconvolution Method", y = "W_COSDIST") + ggplot2::theme(axis.title.x = ggplot2::element_text(size = 40)) + ggplot2::theme(axis.title.y = ggplot2::element_text(size = 40)) + ggplot2::theme(axis.text=ggplot2::element_text(size=30))
+p2 <- p2 + ggplot2::geom_jitter(width = 0.1, height = 0) 
+p2 <- p2 + ggplot2::ylim(0,1.5) 
+p2 <- p2 + ggplot2::labs(title="Violin Plots of Cosine Distance (COSDIST) for Gene Expression",
+                         x = "Deconvolution Method", 
+                         y = "W_COSDIST") 
+p2 <- p2 + ggplot2::theme(axis.title.x = ggplot2::element_text(size = 40)) 
+p2 <- p2 + ggplot2::theme(axis.title.y = ggplot2::element_text(size = 40)) 
+p2 <- p2 + ggplot2::theme(axis.text=ggplot2::element_text(size=30))
+
 print(p2)
 ```
+
+
+```{r}
+#graph_proportions(trueH, resultH.NMF)
+#graph_proportions(trueH, resultH.CIBERSORT)
+```
+
