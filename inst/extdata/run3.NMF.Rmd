@@ -1,0 +1,30 @@
+---
+title: "run3.NMF"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+### Runs NMF on expression matrix from brain, liver, lung mixture data (GSE19830) saved in exp3.RData, saves resultW and resultH to exp3.NMF.result.RData
+
+#### Loads exp3.RData with list of simulated mixture data, trueH, trueW, unmixed data/signature matrices
+```{r}
+load("~/rnaGinesis/rnaGinesis/data/exp3.RData")
+```
+
+#### Runs NMF on scRNA-seq mixture data and obtains resultW, resultH
+```{r}
+# Subsets only first 5000 genes of expression matrix to run NMF (to match CIBERSORT - to run fast enough)
+mixture <- experiment3$ex[1:5000,]
+# Calls helper method runNMF to run NMF on mixture
+exp3.NMF <- runNMF(mixture, rank = 3)
+```
+
+#### Saves results from NMF to .RData file
+```{r}
+save(exp3.NMF, file = "~/rnaGinesis/rnaGinesis/data/exp3.NMF.result.RData")
+```
