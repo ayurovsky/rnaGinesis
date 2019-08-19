@@ -1,0 +1,97 @@
+---
+title: "run2.CIBERSORT"
+output: html_document
+---
+
+
+## R Markdown
+
+```{r}
+#loads from .RData and creates matrices
+load("~/rnaGinesis/data/exp2.RData")
+sig_mat = exp(experiment2$unmixed)
+#sig_mat = cbind(sig_mat[[1]], sig_mat[[2]], sig_mat[[3]])
+dat <- experiment2
+rownames(dat) <- c()
+rownames(sig_mat) <- c()
+
+
+
+dat$sampInfo = seq(1, dim(dat$ex)[2])
+dat$featInfo = seq(1, dim(dat$ex)[1])
+dat$expression <- as.matrix(dat$ex)
+
+sig1 = list()
+sig1$ex = as.matrix(cbind(dat$unmixed[, 1], dat$unmixed[, 1]))
+sig1$featInfo = seq(1, dim(sig1$ex)[1])
+sig1$sampInfo = seq(1, dim(sig1$ex)[2])
+
+
+sig2 = list()
+sig2$ex = as.matrix(cbind(dat$unmixed[, 2], dat$unmixed[, 2]))
+sig2$featInfo = seq(1, dim(sig2$ex)[1])
+sig2$sampInfo = seq(1, dim(sig2$ex)[2])
+
+```
+
+```{r}
+
+library(SummarizedExperiment)
+mixt <- convert_to_SummarizedExperiment(dat)
+sig3 <- convert_to_SummarizedExperiment(sig1)
+sig4 <- convert_to_SummarizedExperiment(sig2)
+assays(mixt)$expression <- exp(assays(mixt)$expression)
+assays(sig3)$expression <- exp(assays(sig3)$expression)
+assays(sig4)$expression <- exp(assays(sig4)$expression)
+
+# calculates rowMean differentials
+diff <- abs(rowMeans(assays(sig3)$expression) - rowMeans(assays(sig4)$expression))
+
+# pick top n genes
+top_n <- head(order(diff, decreasing = TRUE), n = 2000)
+
+library(DeMixT)
+res <- DeMixT(data.Y = mixt[top_n],
+              data.comp1 = sig3[top_n],
+              data.comp2 = sig4[top_n],
+              if.filter = F,
+              output.more.info = T,
+              niter = 1)
+```
+
+
+## Go to https://cibersortx.stanford.edu and run CIBERSORTX. You may have to create an account beforehand.
+## Remember to insert a name for the column that is the row names in both txt files 
+## Upload the signature matrix and the expression matrix. 
+## Run CIBERSORTX
+## download results
+## the W is "CIBERSORTx_JobN_GEP"
+## the H is "CIBERSORTx_JobN_Fractions"
+## move both files into the /data directory
+
+```{r}
+#reads W and H from files and saves as .RData file 
+# exp1.CIBERSORT$H
+exp1.CIBERSORT <- list()
+exp1.CIBERSORT$resultH <- as.matrix(read.delim("~/rnaGinesis/data/CIBERSORTxGEP_Job22_Fractions.txt", header = TRUE, sep = "\t"))
+col1 <- exp1.CIBERSORT$resultH[,1]
+exp1.CIBERSORT$resultH <- data.matrix(read.delim("~/rnaGinesis/data/CIBERSORTxGEP_Job22_Fractions.txt", header = TRUE, sep = "\t"))
+exp1.CIBERSORT$resultH <- exp1.CIBERSORT$resultH[,2:7]
+rownames(exp1.CIBERSORT$resultH) <- col1
+exp1.CIBERSORT$resultH <- t(exp1.CIBERSORT$resultH)
+
+# exp1.CIBERSORT$W
+exp1.CIBERSORT$resultW <- as.matrix(read.delim("~/rnaGinesis/data/CIBERSORTxGEP_Job22_GEPs.txt", header = TRUE, sep = "\t"))
+col1 <- exp1.CIBERSORT$resultW[,1]
+exp1.CIBERSORT$resultW <- data.matrix(read.delim("~/rnaGinesis/data/CIBERSORTxGEP_Job22_GEPs.txt", header = TRUE, sep = "\t"))
+exp1.CIBERSORT$resultW <- exp1.CIBERSORT$resultW[,2:4]
+rownames(exp1.CIBERSORT$resultW) <- col1
+exp2.CIBERSORT <- exp1.CIBERSORT
+
+exp2.CIBERSORT$resultW <- lapply(seq_len(ncol(exp2.CIBERSORT$resultH)), function(X) exp2.CIBERSORT$resultW)
+
+
+save(exp2.CIBERSORT, file = "~/rnaGinesis/data/exp2.CIBERSORT.result.RData")
+
+```
+
