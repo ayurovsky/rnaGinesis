@@ -5,10 +5,12 @@
 
 NMF_analyze = function(data,
                        rank = 4,
+                       method = nmf.getOption('default.algorithm'),
                        seed = 1234)
 {
-  result = nmf(x    = data,
-               rank = 4,
+  result = NMF::nmf(x    = data,
+               rank = rank,
+               method = method,
                seed = seed)
   w = basis(result)
   h = coef(result)

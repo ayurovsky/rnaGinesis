@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 #### Loads exp3.RData with list of simulated mixture data, trueH, trueW, unmixed data/signature matrices
 ```{r}
-load("~/rnaGinesis/rnaGinesis/data/exp3.RData")
+load("../../Data/exp3.RData")
 ```
 
 #### Runs NMF on scRNA-seq mixture data and obtains resultW, resultH
@@ -21,7 +21,8 @@ load("~/rnaGinesis/rnaGinesis/data/exp3.RData")
 # Subsets only first 5000 genes of expression matrix to run NMF (to match CIBERSORT - to run fast enough)
 mixture <- experiment3$ex[1:5000,]
 # Calls helper method runNMF to run NMF on mixture
-exp3.NMF <- runNMF(mixture, rank = 3)
+exp3.NMF <- runNMF(mixture = mixture,
+                   rank = 3)
 ```
 
 #### Saves results from NMF to .RData file
