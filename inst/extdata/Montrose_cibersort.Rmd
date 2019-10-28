@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ## File extract and prep
 
 ```{r unzip, eval = F}
-file <- system.file("extdata/Montrose_raw", "CIBERSORTx_example_outputs.zip", package = "rnaGinesis")
+file <- system.file("extdata", "CIBERSORTx_example_outputs.zip", package = "rnaGinesis")
 unzip(zipfile = file,
       exdir = "./Montrose_raw/")
 ```
