@@ -12,15 +12,15 @@ knitr::opts_chunk$set(echo = TRUE)
 ## File extract and prep
 
 ```{r unzip, eval = F}
-file <- system.file("extdata", "CIBERSORTx_example_outputs.zip", package = "rnaGinesis")
+file <- system.file("extdata/lm7", "LM7_new_outputs.zip", package = "rnaGinesis")
 unzip(zipfile = file,
-      exdir = "./Montrose_raw/")
+      exdir = "./lm7/")
 ```
 
 There are 6 conditions, each containing its own output. We want to input a gene and a cell population (eg: kras and Tcell) and output the respective 
 
 ```{r load parts and parse, eval = F}
-projects <- list.dirs("./Montrose_raw")[c(-1,-6)]
+projects <- list.dirs("./lm7")[c(-1)]
 parsed_projects <- list()
 for (i in projects){
    temp <- list()
@@ -36,8 +36,8 @@ for (i in projects){
       parsed_projects[[to_name]] <- temp[[to_name]]
    }
 }
-
-save(parsed_projects, file = "../../data/Montrose_parsed.RData")
+parsed_projects_lm7 <- parsed_projects
+save(parsed_projects_lm7, file = "../../data/lm7_new_outputs.RData")
 ```
 
 
