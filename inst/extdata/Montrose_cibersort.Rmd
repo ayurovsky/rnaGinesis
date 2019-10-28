@@ -1,0 +1,46 @@
+---
+title: "CIBERSORTx Analysis for Dr. Montrose"
+author: "Luke Torre-Healy"
+date: "10/28/2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## File extract and prep
+
+```{r unzip, eval = F}
+file <- system.file("extdata/Montrose_raw", "CIBERSORTx_example_outputs.zip", package = "rnaGinesis")
+unzip(zipfile = file,
+      exdir = "./Montrose_raw/")
+```
+
+There are 6 conditions, each containing its own output. We want to input a gene and a cell population (eg: kras and Tcell) and output the respective 
+
+```{r load parts and parse, eval = F}
+projects <- list.dirs("./Montrose_raw")[c(-1,-6)]
+parsed_projects <- list()
+for (i in projects){
+   temp <- list()
+   paths <- list.files(i, full.names = T)[c(3:8,11:13)]
+   outputs <- list.files(i)
+   to_name <- strsplit(i, split = "/")[[1]][3]
+   temp[[to_name]] <- list()
+   for (j in paths){
+      file_name <- strsplit(j, split = "Tx")[[1]][3]
+      file_name <- gsub(x = file_name, pattern =".txt", replacement = "")
+      temp[[to_name]][[file_name]] <- read_delim(j,
+                                                 "\t", escape_double = FALSE, trim_ws = TRUE)
+      parsed_projects[[to_name]] <- temp[[to_name]]
+   }
+}
+
+save(parsed_projects, file = "../../data/Montrose_parsed.RData")
+```
+
+
+
+
+

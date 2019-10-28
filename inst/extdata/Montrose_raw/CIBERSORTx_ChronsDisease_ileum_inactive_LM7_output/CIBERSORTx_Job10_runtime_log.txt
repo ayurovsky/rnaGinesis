@@ -1,0 +1,28 @@
+>Running CIBERSORTx GEP imputation (representative profiles only)...
+>[Options] mixture: files/michael.d.sweeney@stonybrook.edu/ileum_CD_inactive.txt
+>[Options] sigmatrix: files/michael.d.sweeney@stonybrook.edu/LM7.txt
+>[Options] threads: 7
+>[Options] nsampling: 30
+>[Options] redo: TRUE [to rerun CIBERSORT, set 'redocibersort' to TRUE]
+>[Options] QN: TRUE
+>[Options] outdir: files/michael.d.sweeney@stonybrook.edu/results/
+>[Options] label: Job10
+>Estimating cell proportions...
+done.
+>Loaded 16 mixture samples, 23307 genes, and 7 cell subsets...
+>Imputing representative cell type GEPs...done.
+>Writing output to disk...done.
+>Running time (sec): 68
+  adding: CIBERSORTxGEP_Job10_Fractions.txt (deflated 51%)
+  adding: CIBERSORTxGEP_Job10_GEPs.txt (deflated 51%)
+  adding: CIBERSORTxGEP_Job10_GEPs_CVs.txt (deflated 52%)
+  adding: CIBERSORTxGEP_Job10_GEPs_Filtered.txt (deflated 55%)
+  adding: CIBERSORTxGEP_Job10_GEPs_Pvals.txt (deflated 54%)
+  adding: CIBERSORTxGEP_Job10_GEPs_Qvals.txt (deflated 65%)
+  adding: CIBERSORTxGEP_Job10_GEPs_StdErrs.txt (deflated 51%)
+  adding: CIBERSORTxGEP_Job10_GEPs_ThresholdPlots.jpg (deflated 2%)
+  adding: CIBERSORTxGEP_Job10_GEPs_ThresholdPlots.pdf (deflated 31%)
+  adding: CIBERSORTxGEP_Job10_SM_GEPs_Filtered.txt (deflated 55%)
+  adding: CIBERSORTxGEP_Job10_Weights.txt (deflated 55%)
+  adding: CIBERSORTx_Job10_error_log.txt (stored 0%)
+  adding: CIBERSORTx_Job10_runtime_log.txt
