@@ -4,8 +4,12 @@
 \alias{NMF_analyze}
 \title{Description}
 \usage{
-NMF_analyze(data, rank = 4,
-  method = nmf.getOption("default.algorithm"), seed = 1234)
+NMF_analyze(
+  data,
+  rank = 4,
+  method = nmf.getOption("default.algorithm"),
+  seed = 1234
+)
 }
 \description{
 Description

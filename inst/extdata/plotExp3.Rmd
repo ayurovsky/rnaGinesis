@@ -16,7 +16,7 @@ knitr::opts_chunk$set(echo = TRUE)
 #### Obtain trueH, trueW and resultH, resultW from each deconvolution method
 ```{r}
 # Obtains trueW, trueH from exp3.RData
-load("~/rnaGinesis/rnaGinesis/data/exp3.RData")
+load("~/rnaGinesis/data/exp3.RData")
 experiment3$trueH <- t(experiment3$trueH)
 experiment3$trueW <- as.matrix(experiment3$trueW)
 experiment3$trueW <- experiment3$trueW[1:5000,]
@@ -26,7 +26,7 @@ trueW <- experiment3$trueW
 trueH <- experiment3$trueH
 
 # Obtains resultW, resultH from NMF and rearranges them to match trueW, trueH ordering
-load("~/rnaGinesis/rnaGinesis/data/exp3.NMF.result.RData")
+load("~/rnaGinesis/data/exp3.NMF.result.RData")
 exp3.NMF <- rearrange(exp3.NMF, experiment3)
 resultW.NMF <- exp3.NMF[[1]]
 resultH.NMF <- exp3.NMF[[2]]
@@ -38,7 +38,12 @@ resultH.NMF <- exp3.NMF[[2]]
 #resultH.DeMixT <- exp3.DeMixT[[2]]
 
 # Obtains resultW, resultH from CIBERSORT and rearranges them to match trueW, trueH ordering
-load("~/rnaGinesis/rnaGinesis/data/exp3.CIBERSORT.result.RData")
+load("~/rnaGinesis/data/exp3.CIBERSORT.result.RData")
+
+# A HACK, because exp3 results were not properly processed, and the original cibersort output is not saved
+# this line should move to run3.CIBERSORT.rmd for the future
+exp3.CIBERSORT$resultW <- lapply(seq_len(ncol(exp3.CIBERSORT$resultH)), function(X) exp3.CIBERSORT$resultW)
+
 exp3.CIBERSORT <- rearrange(exp3.CIBERSORT, experiment3)
 resultW.CIBERSORT <- exp3.CIBERSORT[[1]]
 resultH.CIBERSORT <- exp3.CIBERSORT[[2]]

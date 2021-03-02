@@ -1,4 +1,6 @@
 # Finds the cosine distance between all individual true Ws and all individual result Ws
+#' @export
+#'
 
 makeW_COSDIST <- function(trueW, resultW.NMF, resultW.CIBERSORT) {
   # For every sample

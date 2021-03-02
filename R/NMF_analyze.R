@@ -10,7 +10,6 @@ NMF_analyze = function(data,
 {
   result = NMF::nmf(x    = data,
                rank = rank,
-               method = method,
                seed = seed)
   w = basis(result)
   h = coef(result)

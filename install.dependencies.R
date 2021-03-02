@@ -10,6 +10,9 @@ if (!require("gtools")) {
 if (!require("mvnfast")) {
    install.packages("mvnfast", dependencies = TRUE, repos="http://cran.rstudio.com/")
 }
+if (!require("reshape")) {
+   install.packages("mvnfast", dependencies = TRUE, repos="http://cran.rstudio.com/")
+}
 
 # ===============================
 #          Bioconductor

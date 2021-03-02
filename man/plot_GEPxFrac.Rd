@@ -4,7 +4,7 @@
 \alias{plot_GEPxFrac}
 \title{generate_data_set_list}
 \usage{
-plot_GEPxFrac(data = parsed_projects)
+plot_GEPxFrac(data = parsed_projects, gene = c("PHGDH", "IL27"))
 }
 \description{
 generate_data_set_list

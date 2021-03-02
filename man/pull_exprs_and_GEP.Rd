@@ -4,8 +4,7 @@
 \alias{pull_exprs_and_GEP}
 \title{generate_data_set_list}
 \usage{
-pull_exprs_and_GEP(data = parsed_projects, gene = c("PHGDH", "PSAT1",
-  "PSPH"))
+pull_exprs_and_GEP(data = parsed_projects, gene = c("PHGDH", "PSAT1", "PSPH"))
 }
 \description{
 generate_data_set_list

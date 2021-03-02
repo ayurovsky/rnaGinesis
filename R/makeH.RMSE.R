@@ -1,5 +1,6 @@
 # Returns H.RMSE matrix with RMSE between true propos and estimated props across all samples for each deconvolution method 
-
+#' @export
+#' 
 makeH.RMSE <- function(trueH, resultH.NMF, resultH.CIBERSORT) {
   # For every sample
   H.RMSE <- matrix(nrow = ncol(trueH))

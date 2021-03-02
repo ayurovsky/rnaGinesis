@@ -14,12 +14,12 @@ knitr::opts_chunk$set(echo = TRUE)
 #### Obtain trueH, trueW and resultH, resultW from each deconvolution method
 ```{r}
 # Obtains trueW, trueH from exp2.RData
-load("~/rnaGinesis/rnaGinesis/data/exp2.RData")
+load("~/rnaGinesis/data/exp2.RData")
 trueW <- experiment2$trueW
 trueH <- experiment2$trueH
 
 # Obtains resultW, resultH from NMF and rearranges them to match trueW, trueH ordering
-load("~/rnaGinesis/rnaGinesis/data/exp2.NMF.result.RData")
+load("~/rnaGinesis/data/exp2.NMF.result.RData")
 plot(exp2.NMF$resultH[1,],trueH[1,])
 print(names(exp2.NMF))
 exp2.NMF <- rearrange(exp2.NMF, experiment2)
@@ -40,7 +40,7 @@ resultH.NMF <- exp2.NMF[[2]]
 # resultH.DeMixT <- exp2.DeMixT[[2]]
 
 # Obtains resultW, resultH from CIBERSORT and rearranges them to match trueW, trueH ordering
-load("~/rnaGinesis/rnaGinesis/data/exp2.CIBERSORT.result.RData")
+load("~/rnaGinesis/data/exp2.CIBERSORT.result.RData")
 exp2.CIBERSORT <- rearrange(exp2.CIBERSORT, experiment2)
 plot(exp2.CIBERSORT$resultH[1,],trueH[1,])
 plot(exp2.CIBERSORT$resultH[1,],trueH[2,])
