@@ -137,7 +137,13 @@ sim_data = function(mu_tumor = 101-(1:100),
   # for each sample's mixture matrix
   # ... and a set of mvn params
   # ... simulate mixed expression
-  data = apply(H, 2, sim_data_1, mu, A, seed)
-  
-  return(list(data, exp(mu)))
+  #data = apply(H, 2, sim_data_1, mu, A, seed)
+  trueW = list()
+  data = matrix(nrow=length(mu_tumor), ncol=0)
+  for(i in 1:ncol(H)) {
+    res_sim <- sim_data_1(H[,i], mu, A, seed+(i-1))
+    data <-cbind(data,res_sim[[1]])
+    trueW[[i]] <- res_sim[[2]]
+  }
+  return(list(data, exp(mu), trueW))
 }

@@ -20,9 +20,9 @@ parseGSE19830 <- function() {
   sampInfo <- gse@phenoData
   featInfo <- data.frame(SYMBOL = rownames(ex))
   parsedGSE19830 <- list()
-  parsedGSE19830$ex <- ex
-  parsedGSE19830$sampInfo <- sampInfo@data
-  parsedGSE19830$featInfo <- featInfo
+  parsedGSE19830$expression <- ex
+  parsedGSE19830$sampleInfo <- sampInfo
+  parsedGSE19830$featureInfo <- featInfo
   parsedGSE19830$metadata <- list(log.transformed = FALSE,
                                    reference = "Shen-Orr SS, Tibshirani R, Khatri P, Bodian DL et al. Cell type-specific gene expression differences in complex tissues. Nat Methods 2010 Apr;7(4):287-9. PMID: 20208531",
                                    accession = "GSE19830",
@@ -30,6 +30,6 @@ parseGSE19830 <- function() {
                                    survivalA = "None",
                                    survivalB = "None")
   
-  save(parsedGSE19830, file = "./data/datasetGSE19830.RData")
+  save(parsedGSE19830, file = "./data/alisa_datasetGSE19830.RData")
   return(NULL)
 }

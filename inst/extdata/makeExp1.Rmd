@@ -11,11 +11,20 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ### Creates simulated data and saves expression matrix, trueH, trueW, and unmixed data to exp1.RData
 
-#### Creates simulated data with 3 compartments, sample size = 50, noise_setting = 10
+#### Creates simulated data with 3 compartments, sample size = 50, noise_setting = TBD
 ```{r}
-load("~/Desktop/stonybrook/simons/moffitt/src/pdac/data/A.RData")
-load("~/Desktop/stonybrook/simons/moffitt/src/pdac/data/mu.RData")
+# original locations of A and mu?
+#load("~/Desktop/stonybrook/simons/moffitt/src/pdac/data/A.RData")
+#load("~/Desktop/stonybrook/simons/moffitt/src/pdac/data/mu.RData")
 
+#load("~/rnaGinesis/data/A.RData")
+#load("~/rnaGinesis/data/mu.RData")
+
+init_info <- calculate_initial_mu_and_A()
+mu <- init_info[[1]]
+A <- init_info[[2]]
+
+# no noise = 0; medium noise = 5; high_noise = 10;
 Samplesize = 50
 scaleFactor = rep(30, 2)
 noise_setting = 0
@@ -29,7 +38,7 @@ sim.data <- Complete_simulation(A_tumor = A,
                                d.params = d.params,
                                noise_setting = noise_setting,
                                seed = 1234)
-names(sim.data) = c("Y", "W", "H", "Wi", "pureExample1", "pureExample2")
+#names(sim.data) = c("Y", "W", "H", "Wi", "pureExample1", "pureExample2")
 ```
 
 #### Obtains expression matrix with mixture data, trueW, trueH, signature matrices 
@@ -48,5 +57,9 @@ experiment1$unmixed <- meanW
 
 #### Saves experiment1 data to .RData file
 ```{r}
-save(experiment1, file = "/Users/anandbanwasi/Desktop/stonybrook/simons/moffitt/src/pdac/data/exp1_medium_noise.RData")
+save(experiment1, file = "~/rnaGinesis/data/alisa_new_A_mu_exp1_no_noise.RData")
+#save(experiment1, file = "~/rnaGinesis/data/alisa_orig_A_mu_exp1_no_noise.RData")
+#save(experiment1, file = "~/rnaGinesis/data/alisa_orig_A_mu_exp1_medium_noise.RData")
+#save(experiment1, file = "~/rnaGinesis/data/alisa_orig_A_mu_exp1_high_noise.RData")
+
 ```

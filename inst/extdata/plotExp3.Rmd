@@ -16,55 +16,61 @@ knitr::opts_chunk$set(echo = TRUE)
 #### Obtain trueH, trueW and resultH, resultW from each deconvolution method
 ```{r}
 # Obtains trueW, trueH from exp3.RData
-load("~/rnaGinesis/data/exp3.RData")
+load("~/rnaGinesis/data/alisa_exp3.RData")
 experiment3$trueH <- t(experiment3$trueH)
 experiment3$trueW <- as.matrix(experiment3$trueW)
-experiment3$trueW <- experiment3$trueW[1:5000,]
+#experiment3$trueW <- experiment3$trueW[1:5000,]
+load("~/rnaGinesis/data/exp3_100_DEMIXT.result.RData")
+experiment3$trueW <- experiment3$trueW[exp3.DEMIXT$top_n,]
+# make a list of identical Ws because rearrange expects them...
 experiment3$trueW <- lapply(seq_len(ncol(experiment3$trueH)), function(X) experiment3$trueW)
 
 trueW <- experiment3$trueW
 trueH <- experiment3$trueH
 
 # Obtains resultW, resultH from NMF and rearranges them to match trueW, trueH ordering
-load("~/rnaGinesis/data/exp3.NMF.result.RData")
+load("~/rnaGinesis/data/alisa_exp3.NMF.result.RData")
+exp3.NMF[[1]] <- lapply(exp3.NMF[[1]], function(X) X[exp3.DEMIXT$top_n,])
 exp3.NMF <- rearrange(exp3.NMF, experiment3)
 resultW.NMF <- exp3.NMF[[1]]
 resultH.NMF <- exp3.NMF[[2]]
 
-# Obtains resultW, resultH from DeMixT and rearranges them to match trueW, trueH ordering
-#load("~/rnaGinesis/rnaGinesis/data/exp3.DeMixT.result.RData")
-#exp3.DeMixT <- rearrange(exp3.DeMixT, experiment3)
-#resultW.DeMixT <- exp3.DeMixT[[1]]
-#resultH.DeMixT <- exp3.DeMixT[[2]]
+# Obtains resultW, resultH from DEMIXT and rearranges them to match trueW, trueH ordering
+exp3.DEMIXT <- rearrange(exp3.DEMIXT, experiment3)
+resultW.DEMIXT <- exp3.DEMIXT[[1]]
+resultH.DEMIXT <- exp3.DEMIXT[[2]]
 
 # Obtains resultW, resultH from CIBERSORT and rearranges them to match trueW, trueH ordering
-load("~/rnaGinesis/data/exp3.CIBERSORT.result.RData")
+#load("~/rnaGinesis/data/alisa_exp3.CIBERSORT.result.RData")
 
-# A HACK, because exp3 results were not properly processed, and the original cibersort output is not saved
-# this line should move to run3.CIBERSORT.rmd for the future
-exp3.CIBERSORT$resultW <- lapply(seq_len(ncol(exp3.CIBERSORT$resultH)), function(X) exp3.CIBERSORT$resultW)
 
-exp3.CIBERSORT <- rearrange(exp3.CIBERSORT, experiment3)
-resultW.CIBERSORT <- exp3.CIBERSORT[[1]]
-resultH.CIBERSORT <- exp3.CIBERSORT[[2]]
+#exp3.CIBERSORT$resultW <- lapply(seq_len(ncol(exp3.CIBERSORT$resultH)), function(X) #exp3.CIBERSORT$resultW)
+
+#exp3.CIBERSORT <- rearrange(exp3.CIBERSORT, experiment3)
+#resultW.CIBERSORT <- exp3.CIBERSORT[[1]]
+#resultH.CIBERSORT <- exp3.CIBERSORT[[2]]
 ```
 
 #### Creates H.RMSE with RMSE between true props and estimated props across all samples for each deconvolution method
 ```{r}
 # Normalizes resultH so that proportions sum to 1
 resultH.NMF <- apply(resultH.NMF, 2, FUN = sum_to_1)
-resultH.CIBERSORT <- apply(resultH.CIBERSORT, 2, FUN = sum_to_1)
+#resultH.CIBERSORT <- apply(resultH.CIBERSORT, 2, FUN = sum_to_1)
+resultH.DEMIXT <- apply(resultH.DEMIXT, 2, FUN = sum_to_1)
 
-plot(exp3.NMF$resultH[1,],trueH[1,])
-plot(exp3.NMF$resultH[2,],trueH[2,])
-plot(exp3.NMF$resultH[3,],trueH[3,])
 
-plot(exp3.CIBERSORT$resultH[1,],trueH[1,])
-plot(exp3.CIBERSORT$resultH[2,],trueH[2,])
-plot(exp3.CIBERSORT$resultH[3,],trueH[3,])
+#plot(exp3.NMF$resultH[1,],trueH[1,])
+#plot(exp3.NMF$resultH[2,],trueH[2,])
+#plot(exp3.NMF$resultH[3,],trueH[3,])
+
+#plot(exp3.CIBERSORT$resultH[1,],trueH[1,])
+#plot(exp3.CIBERSORT$resultH[2,],trueH[2,])
+#plot(exp3.CIBERSORT$resultH[3,],trueH[3,])
 
 # Obtains RMSE for each sample between true proportions and estimated proportions
-H.RMSE <- makeH.RMSE(trueH, resultH.NMF, resultH.CIBERSORT)
+#H.RMSE <- makeH.RMSE(trueH, resultH.NMF, resultH.CIBERSORT)
+H.RMSE <- makeH.RMSE(trueH, resultH.NMF, resultH.DEMIXT, "NMF", "DEMIXT")
+
 ```
 
 #### Graphs violin plot with H.RMSE values from each deconvolution method
@@ -75,6 +81,8 @@ mydf <- mydf[,-1]
 names(mydf) <- c("method", "H_RMSE") 
 
 # plots H.RMSE between true proportions and estimated proportions in each sample based on deconvolution method
+# make jitter reproduceable
+set.seed(1234)
 p <- ggplot2::ggplot(data = mydf, ggplot2::aes(y = H_RMSE, x= method, fill = method))
 p <- p + ggplot2::geom_violin()
 p <- p + ggplot2::geom_jitter(width = 0.1, height = 0) + ggplot2::ylim(0,1) 
@@ -92,7 +100,9 @@ print(p)
 ```{r}
 #W.RMSE <- makeW.RMSE(trueW, resultW.NMF, resultW.CIBERSORT)
 
-W.COSDIST <- makeW_COSDIST(trueW, resultW.NMF, resultW.CIBERSORT)
+#W.COSDIST <- makeW_COSDIST(trueW, resultW.NMF, resultW.CIBERSORT)
+W.COSDIST <- makeW_COSDIST(trueW, resultW.NMF, resultW.DEMIXT, "NMF", "DEMIXT")
+
 #W.COSDIST <- makeW_COSDIST(trueW, resultW)
 ```
 
@@ -105,6 +115,8 @@ mydf2 <- mydf2[,-1]
 names(mydf2) <- c("method", "W_COSDIST") 
 
 # plots W.COSDIST between true W and estimated W in each sample based on deconvolution method
+# make jitter reproduceable
+set.seed(1234)
 p2 <- ggplot2::ggplot(data = mydf2, ggplot2::aes(y = W_COSDIST, x= method, fill = method))
 p2 <- p2 + ggplot2::geom_violin()
 p2 <- p2 + ggplot2::geom_jitter(width = 0.1, height = 0) + ggplot2::ylim(0,1) 

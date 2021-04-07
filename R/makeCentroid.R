@@ -1,4 +1,8 @@
-# Creates centroids representing average gene expression profile for each cell type
+#' Creates centroids representing average gene expression profile for each cell type
+#' #'
+#' @export
+#' 
+
 makeCentroid <- function(data) {
   # Creates matrix with centroid of each cell type from expression matrix aka avg alpha cell gene expression profile, avg beta cell gene expression profile, etc.
   x <- as.data.frame(t(data$ex))

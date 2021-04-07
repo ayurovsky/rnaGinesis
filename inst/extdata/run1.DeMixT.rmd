@@ -13,29 +13,40 @@ knitr::opts_chunk$set(echo = TRUE)
 load("~/rnaGinesis/data/exp1.RData")
 # experiment1$ex
 d <- experiment1$ex
+d <- d[1:100,]
 experiment1$sampInfo = seq(1, dim(d)[2])
 experiment1$featInfo = seq(1, dim(d)[1])
 experiment1$ex <- as.matrix(d)
 
-sig_mat = experiment1$unmixed
-sig_mat_2 = cbind(sig_mat[[1]], sig_mat[[2]], sig_mat[[3]])
+
+#sig_mat = experiment1$unmixed
+#sig_mat = sig_mat[1:500,]
 
 sig1 = list()
-# sig1$ex = matrix(sig_mat[,1])
-sig1$ex = experiment1$ex[, 1:10]
+# take first 10 trueW tissue 1, first X genes
+sig1$ex = c()
+for (i in 1:10) {
+  sig1$ex = cbind(sig1$ex, experiment1$trueW[[i]][1:100,1])
+}
+#sig1$ex = cbind(matrix(sig_mat[,1]),matrix(sig_mat[,1]))
+#sig1$ex = experiment1$ex[, 1:10]
 sig1$featInfo = seq(1, dim(sig1$ex)[1])
 sig1$sampInfo = seq(1, dim(sig1$ex)[2])
 
 sig2 = list()
-# sig2$ex = matrix(sig_mat[,2])
-sig2$ex = experiment1$ex[, 11:20]
+sig2$ex = c()
+for (i in 1:10) {
+  sig2$ex = cbind(sig2$ex, experiment1$trueW[[i]][1:100,2])
+}
+#sig2$ex = cbind(matrix(sig_mat[,2]),matrix(sig_mat[,2]))
+#sig2$ex = experiment1$ex[, 11:20]
 sig2$featInfo = seq(1, dim(sig2$ex)[1])
 sig2$sampInfo = seq(1, dim(sig2$ex)[2])
   
 
-mixt = experiment1$ex
-row.names(mixt) <- as.numeric(row.names(mixt))
-row.names(sig_mat_2) <- as.numeric(row.names(sig_mat_2))
+#mixt = experiment1$ex
+#row.names(mixt) <- as.numeric(row.names(mixt))
+#row.names(sig_mat_2) <- as.numeric(row.names(sig_mat_2))
 
 ```
 
@@ -52,7 +63,6 @@ library(DeMixT)
 
 
 
-
 ```{r}
 library(SummarizedExperiment)
 mixt <- convert_to_SummarizedExperiment(experiment1)
@@ -63,15 +73,20 @@ sig4 <- convert_to_SummarizedExperiment(sig2)
 
 ```{r}
 help("DeMixT")
+ptm <- proc.time()
 res <- DeMixT(data.Y = mixt,
-              data.comp1 = sig3,
-              data.comp2 = sig4,
+              data.N1 = sig3,
+              data.N2 = sig4,
               if.filter = FALSE,
-              output.more.info = TRUE)
-SummarizedExperiment::assays(sig3)[[1]]
-length(unique(c(1, 1)))
-test.data1.comp1@assays@.xData$data@listData$counts
-# SummarizedExlperiment::assays(sig3)[[1]]
-# d <- cbind(SummarizedExperiment::assays(mixt)[[1]], SummarizedExperiment::assays(sig3)[[1]], SummarizedExperiment::assays(sig4)[[1]])
+              output.more.info = TRUE, nthread = 1)
+proc.time() - ptm
+exp1.DEMIXT <- list()
+exp1.DEMIXT$resultH <- res$pi
+exp1.DEMIXT$resultW <- list()
+for (i in 1:50) {
+  exp1.DEMIXT$resultW[[i]] <- as.matrix(cbind(res$ExprN1[,i], res$ExprN2[,i], res$ExprT[,i]))
+}
+save(exp1.DEMIXT, file = "~/rnaGinesis/data/exp1_100_DEMIXT.result.RData")
+
 ```
 

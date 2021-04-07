@@ -13,7 +13,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 #### Loads exp2.RData with list of simulated mixture data, trueH, trueW, unmixed data/signature matrices
 ```{r}
-load("~/rnaGinesis/rnaGinesis/data/exp2.RData")
+load("~/rnaGinesis/data/exp2.RData")
+#load("~/rnaGinesis/data/alisa_exp2.RData")
 ```
 
 #### Runs NMF on scRNA-seq mixture data and obtains resultW, resultH
@@ -25,5 +26,7 @@ exp2.NMF <- runNMF(mixture, rank = 3)
 
 #### Saves results from NMF to .RData file
 ```{r}
-save(exp2.NMF, file = "~/rnaGinesis/rnaGinesis/data/exp2.NMF.result.RData")
+save(exp2.NMF, file = "~/rnaGinesis/data/exp2.NMF.result.RData")
+#save(exp2.NMF, file = "~/rnaGinesis/data/alisa_exp2.NMF.result.RData")
+
 ```

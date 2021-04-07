@@ -9,19 +9,18 @@ output: html_document
 ```{r}
 #loads from .RData and creates matrices
 load("~/rnaGinesis/data/exp2.RData")
+#load("~/rnaGinesis/data/alisa_exp2.RData")
 sig_mat = experiment2$unmixed
-#sig_mat = cbind(sig_mat[[1]], sig_mat[[2]], sig_mat[[3]])
 mixt = experiment2$ex
 rownames(mixt) <- c()
 rownames(sig_mat) <- c()
 # sig_mat
-# save(sig_mat, file = "~/rnaGinesis/data/exp1_sigmat.txt")
 write.table(sig_mat, "~/rnaGinesis/data/exp2_sigmat.txt", sep="\t")
 write.table(mixt, "~/rnaGinesis/data/exp2_mixt.txt", sep="\t")
-# save(mixt, file = "~/rnaGinesis/data/exp1_mixt.txt")
 ```
 
 ```{r}
+# not used
 q <- as.matrix(rownames(experiment2$ex))
 # print(c)
 write.table(q, "~/rnaGinesis/data/exp2_subset.txt", sep="\t", row.names = FALSE, col.names = FALSE)
@@ -39,27 +38,27 @@ write.table(q, "~/rnaGinesis/data/exp2_subset.txt", sep="\t", row.names = FALSE,
 
 ```{r}
 #reads W and H from files and saves as .RData file 
-# exp1.CIBERSORT$H
-exp1.CIBERSORT <- list()
-exp1.CIBERSORT$resultH <- as.matrix(read.delim("~/rnaGinesis/data/CIBERSORTxGEP_Job22_Fractions.txt", header = TRUE, sep = "\t"))
-col1 <- exp1.CIBERSORT$resultH[,1]
-exp1.CIBERSORT$resultH <- data.matrix(read.delim("~/rnaGinesis/data/CIBERSORTxGEP_Job22_Fractions.txt", header = TRUE, sep = "\t"))
-exp1.CIBERSORT$resultH <- exp1.CIBERSORT$resultH[,2:7]
-rownames(exp1.CIBERSORT$resultH) <- col1
-exp1.CIBERSORT$resultH <- t(exp1.CIBERSORT$resultH)
+# exp2.CIBERSORT$H
+exp2.CIBERSORT <- list()
+exp2.CIBERSORT$resultH <- as.matrix(read.delim("~/rnaGinesis/data/CIBERSORTxGEP_Job5_Fractions.txt", header = TRUE, sep = "\t"))
+col1 <- exp2.CIBERSORT$resultH[,1]
+exp2.CIBERSORT$resultH <- data.matrix(read.delim("~/rnaGinesis/data/CIBERSORTxGEP_Job5_Fractions.txt", header = TRUE, sep = "\t"))
+exp2.CIBERSORT$resultH <- exp2.CIBERSORT$resultH[,2:7]
+rownames(exp2.CIBERSORT$resultH) <- col1
+exp2.CIBERSORT$resultH <- t(exp2.CIBERSORT$resultH)
 
-# exp1.CIBERSORT$W
-exp1.CIBERSORT$resultW <- as.matrix(read.delim("~/rnaGinesis/data/CIBERSORTxGEP_Job22_GEPs.txt", header = TRUE, sep = "\t"))
-col1 <- exp1.CIBERSORT$resultW[,1]
-exp1.CIBERSORT$resultW <- data.matrix(read.delim("~/rnaGinesis/data/CIBERSORTxGEP_Job22_GEPs.txt", header = TRUE, sep = "\t"))
-exp1.CIBERSORT$resultW <- exp1.CIBERSORT$resultW[,2:4]
-rownames(exp1.CIBERSORT$resultW) <- col1
-exp2.CIBERSORT <- exp1.CIBERSORT
+# exp2.CIBERSORT$W
+exp2.CIBERSORT$resultW <- as.matrix(read.delim("~/rnaGinesis/data/CIBERSORTxGEP_Job5_GEPs.txt", header = TRUE, sep = "\t"))
+col1 <- exp2.CIBERSORT$resultW[,1]
+exp2.CIBERSORT$resultW <- data.matrix(read.delim("~/rnaGinesis/data/CIBERSORTxGEP_Job5_GEPs.txt", header = TRUE, sep = "\t"))
+exp2.CIBERSORT$resultW <- exp2.CIBERSORT$resultW[,2:4]
+rownames(exp2.CIBERSORT$resultW) <- col1
+
 
 exp2.CIBERSORT$resultW <- lapply(seq_len(ncol(exp2.CIBERSORT$resultH)), function(X) exp2.CIBERSORT$resultW)
 
 
-save(exp2.CIBERSORT, file = "~/rnaGinesis/data/exp2.CIBERSORT.result.RData")
+save(exp2.CIBERSORT, file = "~/rnaGinesis/data/alisa_exp2.CIBERSORT.result.RData")
 
 ```
 

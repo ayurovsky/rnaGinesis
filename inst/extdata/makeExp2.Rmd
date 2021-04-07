@@ -13,7 +13,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 #### Load parsed scRNA-seq data 
 ```{r}
-load("~/Desktop/stonybrook/simons/moffitt/src/pdac/data/muraro.seurat.RData")
+#load("~/rnaGinesis/data/muraro.seurat.RData")
+load("~/rnaGinesis/data/muraro.alisa.RData")
 ```
 
 #### Creates mu (avg W) with cell-type gene expression profiles
@@ -31,7 +32,7 @@ mu   = subsetCentroid(data, mu, 3)
 Samplesize = 50
 d.params   = c("alpha"  = 0.5,
                "beta"   = 0.2,
-               "ductal" = 0.3)
+               "duct" = 0.3)
 trueH      = sim_H(S = Samplesize,
            d.params = d.params)
 ``` 
@@ -57,5 +58,5 @@ experiment2$unmixed = mu
 
 #### Saves experiment2 data to .RData file
 ```{r}
-save(experiment2, file = "/Users/anandbanwasi/Desktop/stonybrook/simons/moffitt/src/pdac/data/exp2.RData")
+save(experiment2, file = "~/rnaGinesis/data/alisa_exp2.RData")
 ```

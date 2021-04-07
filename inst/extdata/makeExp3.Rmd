@@ -5,7 +5,7 @@ output: html_notebook
 
 
 ```{r}
-load("~/rnaGinesis/data/datasetGSE19830.RData")
+load("~/rnaGinesis/data/alisa_datasetGSE19830.RData")
 tab = parsedGSE19830
 # tab$sampleInfo@data$characteristics_ch1
 # head(tab$expression)
@@ -46,8 +46,8 @@ experiment3$trueW <- experiment3$unmixed
 # vec
 # vec <- as.matrix(vec[which(vec != NULL),])
 # exp3 <- as.data.frame(as.matrix(vec[which(vec != 0),]))
-print(experiment3)
-save(experiment3, file = "~/rnaGinesis/data/exp3.RData")
+#print(experiment3)
+save(experiment3, file = "~/rnaGinesis/data/alisa_exp3.RData")
 
 # 
 # print(mean(tab$expression[,1]))

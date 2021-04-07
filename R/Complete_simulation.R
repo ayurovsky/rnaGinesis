@@ -24,10 +24,11 @@ Complete_simulation = function(A_tumor,
                      seed        = seed)
   data = datasim[[1]]
   W    = datasim[[2]]
+  trueW = datasim[[3]]
   
   data = add_error(sim_data      = data,
                    seed          = seed,
                    noise_setting = noise_setting)
-  return(list(data,W,H))
+  return(list(data,W,H,trueW))
 }
 

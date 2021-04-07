@@ -13,7 +13,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 #### Loads exp1.RData with list of simulated mixture data, trueH, trueW, unmixed data/signature matrices
 ```{r}
-load("~/Desktop/stonybrook/simons/moffitt/src/pdac/data/exp1_medium_noise.RData")
+#load("~/rnaGinesis/data/alisa_orig_A_mu_exp1_no_noise.RData")
+load("~/rnaGinesis/data/alisa_new_A_mu_exp1_no_noise.RData")
+#load("~/rnaGinesis/data/exp1.RData")
 ```
 
 #### Runs NMF on simulated mixture data and obtains resultW, resultH
@@ -25,5 +27,7 @@ exp1.NMF <- runNMF(mixture, rank = 3)
 
 #### Saves results from NMF to .RData file
 ```{r}
-save(exp1.NMF, file = "/Users/anandbanwasi/Desktop/stonybrook/simons/moffitt/src/pdac/data/exp1_medium_noise.NMF.result.RData")
+save(exp1.NMF, file = "~/rnaGinesis/data/alisa_new_A_mu_exp1_no_noise.NMF.result.RData")
+#save(exp1.NMF, file = "~/rnaGinesis/data/alisa_orig_A_mu_exp1_no_noise.NMF.result.RData")
+#save(exp1.NMF, file = "~/rnaGinesis/data/exp1_rep2.NMF.result.RData")
 ```

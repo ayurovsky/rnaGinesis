@@ -1,8 +1,11 @@
-# Obtains cell-type specific gene expression profiles of X most common cell-types in data from centroid
+#' Obtains cell-type specific gene expression profiles of X most common cell-types in data from centroid
+#' #'
+#' @export
+#'
 
 subsetCentroid <- function(data, centroid, numTypes) {
   # obtains counts of each cell type
-  cellTypeCounts <- as.data.frame((summary(factor(data$metadata$celltype))))
+  cellTypeCounts <- as.data.frame((summary(factor(data$sampInfo$cell_type))))
    
   # orders cellTypeCounts in descending order
   cellTypeCounts <- cellTypeCounts[order(cellTypeCounts, decreasing = T),, drop = F]

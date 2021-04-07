@@ -53,14 +53,28 @@ assays(sig4)$expression <- exp(assays(sig4)$expression)
 diff <- abs(rowMeans(assays(sig3)$expression) - rowMeans(assays(sig4)$expression))
 
 # pick top n genes
-top_n <- head(order(diff, decreasing = T), n = 80)
+top_n <- head(order(diff, decreasing = T), n = 100)
 
 # run DeMixT -- by subsetting in the function you save memory
+ptm <- proc.time()
 library(DeMixT)
 res <- DeMixT(data.Y = mixt[top_n],
-              data.comp1 = sig3[top_n],
-              data.comp2 = sig4[top_n],
+              data.N1 = sig3[top_n],
+              data.N2 = sig4[top_n],
               if.filter = F,
               output.more.info = T)
+proc.time() - ptm
+exp3.DEMIXT <- list()
+exp3.DEMIXT$resultH <- res$pi
+exp3.DEMIXT$resultW <- list()
+for (i in 1:42) {
+  exp3.DEMIXT$resultW[[i]] <- as.matrix(cbind(res$ExprN1[,i], res$ExprN2[,i], res$ExprT[,i]))
+}
+# get the indeces of the genes actually returned/used
+install.packages("tidyverse")
+library(stringr)
+genes_used <- as.integer(word(as.character(res$gene.name),2))
+exp3.DEMIXT$top_n <- top_n[genes_used]
+save(exp3.DEMIXT, file = "~/rnaGinesis/data/exp3_100_DEMIXT.result.RData")
 ```
 

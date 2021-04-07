@@ -98,5 +98,5 @@ sim_data_1 = function(h.i, mean, chol,seed = 1234)
  
   
   W = exp(W)
-  return(W %*% h.i)
+  return(list(W %*% h.i, W))
 }
