@@ -1,0 +1,49 @@
+---
+title: "makeExp4.Rmd"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+load("~/rnaGinesis/data/datasetGSE97284.RData")
+
+
+
+experiment4 <- list()
+
+# expression are 24 samples that are "AM" or admixtures
+mixed_sample_names <- parsedGSE97284$sampleInfo@data[parsedGSE97284$sampleInfo@data["roi:ch1"]=="AM","geo_accession"]
+experiment4$ex <- as.matrix(parsedGSE97284$ex[,mixed_sample_names])
+experiment4$trueH <- NULL
+experiment4$trueW <- list()
+
+# define the order of tissues
+tissues <- c("B", "sB", "P", "sP", "T", "sT")
+
+counter <- 1
+for (i in mixed_sample_names) {
+  case <- parsedGSE97284$sampleInfo@data[i,"case:ch1"]
+  trueW <- vector()
+  for (t in tissues) {
+    t_sample_name <- parsedGSE97284$sampleInfo@data[(parsedGSE97284$sampleInfo@data["roi:ch1"]==t & parsedGSE97284$sampleInfo@data["case:ch1"]==case),"geo_accession"]
+    trueW <- cbind(trueW, parsedGSE97284$ex[,t_sample_name])
+  }
+  colnames(trueW) <- tissues
+  experiment4$trueW[[counter]] <- trueW
+  counter <- counter + 1
+}
+
+# get the mean of each tissue
+t_means <- vector()
+for (t in tissues) {
+   t_sample_names <- parsedGSE97284$sampleInfo@data[parsedGSE97284$sampleInfo@data["roi:ch1"]==t,"geo_accession"]
+   t_means <- cbind(t_means, rowMeans(parsedGSE97284$ex[,t_sample_names]))
+}
+colnames(t_means) <- tissues
+
+experiment4$unmixed <- t_means
+
+save(experiment4, file = "~/rnaGinesis/data/exp4.RData")
+
+ 
+```
