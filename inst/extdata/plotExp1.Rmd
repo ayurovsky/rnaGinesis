@@ -103,6 +103,7 @@ print(p)
 
 #W.COSDIST <- makeW_COSDIST(trueW, resultW.NMF, resultW.CIBERSORT)
 W.COSDIST <- makeW_COSDIST(trueW, resultW.NMF, resultW.DEMIXT, "NMF", "DEMIXT")
+
 #W.COSDIST <- makeW_COSDIST(trueW, resultW)
 ```
 

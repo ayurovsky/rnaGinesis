@@ -1,4 +1,6 @@
 # Finds the cosine distance between all individual true Ws and all individual result Ws
+#' @export
+#'
 
 evalW.COSDIST <- function(trueW, resultW) {
   # Makes column with cos distance of each true W and result W matrices in all samples
