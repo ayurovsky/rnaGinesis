@@ -1,0 +1,126 @@
+---
+title: "ImprovePerSampleH"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+```{r}
+
+n_compartments <- 3
+percent_keep <- 1.0
+
+
+# Obtains trueW, trueH from exp
+#load("~/rnaGinesis/data/alisa_new_A_mu_exp1_no_noise.RData")
+#load("~/rnaGinesis/data/alisa_exp2.RData")
+load("~/rnaGinesis/data/exp3.RData")
+
+####
+# Obtains resultW, resultH from NMF and rearranges them to match trueW, trueH ordering
+#load("~/rnaGinesis/data/alisa_new_A_mu_exp1_no_noise.NMF.result.RData")
+#exp1.NMF <- rearrange(exp1.NMF, experiment1)
+#resultW.NMF <- exp1.NMF[[1]]
+#resultH.NMF <- exp1.NMF[[2]]
+####
+
+####
+#load("~/rnaGinesis/data/alisa_exp2.NMF.result.RData")
+#exp2.NMF <- rearrange(exp2.NMF, experiment2)
+#resultW.NMF <- exp2.NMF[[1]]
+#resultH.NMF <- exp2.NMF[[2]]
+####
+
+####
+load("~/rnaGinesis/data/exp3.NMF.result.RData")
+experiment3$trueH <- t(experiment3$trueH)
+experiment3$ex <- experiment3$ex[1:5000,]
+experiment3$trueW <- lapply(seq_len(ncol(experiment3$trueH)), function(X) experiment3$trueW[1:5000,])
+exp3.NMF <- rearrange(exp3.NMF, experiment3)
+resultW.NMF <- exp3.NMF[[1]]
+resultH.NMF <- exp3.NMF[[2]]
+####
+
+####
+experiment_to_use <- experiment3
+trueMixed <- experiment_to_use$ex
+trueH <- experiment_to_use$trueH
+####
+
+```
+
+
+```{r}
+library(matrixStats)
+# get standard deviation of each gene
+sds <- rowSds(trueMixed)
+
+# get cutoff for percent_keep% of "more accurate genes
+cutoff <- ceiling(nrow(trueMixed)*percent_keep)
+
+newH <- vector()
+# now iterate over the samples' H
+for(i in 1:ncol(resultH.NMF)) { 
+  predictedH <- resultH.NMF[,i]
+  # muliply predicted W by predicted H to get predicted
+  # mixed expression for this sample
+  predictedW <- resultW.NMF[[i]] # rearrange re-arranges each W separately for each sample
+  predictedMixed <- predictedW %*% predictedH
+  diffMixed <- abs(predictedMixed - trueMixed[,i])
+  # get proportion of difference to the standard deviation of each gene
+  error <- diffMixed / sds[i]
+  #print(error[1:20])
+  # now keep percent_keep% of genes with the smallest error
+  ranked_errors <- rank(as.numeric(error))
+  #print(ranked_errors[1:20])
+  keep_indecies <- sapply(ranked_errors, function(x) x <= cutoff)
+  #print(keep_indecies[1:20])
+  #next
+  # get the subset of the expressions, and re-run NMF
+  subsetMixed <- trueMixed[keep_indecies,]
+  subset.NMF <- runNMF(subsetMixed, rank = n_compartments)
+  # rearrange the results, using the W from the original experiment
+  subset.NMF[[1]] <- resultW.NMF
+  subset.NMF <- rearrange(subset.NMF, experiment_to_use)
+  new_resultH.NMF <- subset.NMF[[2]]
+  # save just the h column for this sample
+  newH <- cbind(newH, new_resultH.NMF[,i])
+}
+```
+
+
+#### Creates H.RMSE with RMSE between true props and estimated props across all samples for each deconvolution method
+```{r}
+# Normalizes resultH so that proportions sum to 1
+resultH.NMF <- apply(resultH.NMF, 2, FUN = sum_to_1)
+newH <- apply(newH, 2, FUN = sum_to_1)
+# Obtains RMSE for each sample between true proportions and estimated proportions for all deconvolution methods
+#H.RMSE <- makeH.RMSE(trueH, resultH.NMF, resultH.CIBERSORT)
+H.RMSE <- makeH.RMSE(trueH, resultH.NMF, newH, "NMF", "New_H_NMF")
+```
+
+#### Graphs violin plot with H.RMSE values from each deconvolution method
+```{r}
+# melts H.RMSE into dataframe with two variables, method (1 = CIBERSORT, 2 = NMF) and H.RMSE across all samples for each deconvolution method 
+mydf <- reshape2::melt(H.RMSE)
+mydf <- mydf[,-1]
+names(mydf) <- c("method", "H_RMSE") 
+
+# plots H.RMSE between true proportions and estimated proportions in each sample based on deconvolution method
+# make jitter reproduceable
+set.seed(1234)
+p <- ggplot2::ggplot(data = mydf, ggplot2::aes(y = H_RMSE, x= method, fill = method))
+p <- p + ggplot2::geom_violin()
+p <- p + ggplot2::geom_jitter(width = 0.1, height = 0) + ggplot2::ylim(0,1) 
+p <- p + ggplot2::labs(title="Violin Plots of Root Mean Squared Error (RMSE) for Proportions",
+                       x = "Deconvolution Method",
+                       y = "H_RMSE")
+p <- p + ggplot2::theme(axis.title.x = ggplot2::element_text(size = 40)) 
+p <- p +  ggplot2::theme(axis.title.y = ggplot2::element_text(size = 40)) 
+p <- p +  ggplot2::theme(axis.text = ggplot2::element_text(size=30))
+
+print(p)
+```
