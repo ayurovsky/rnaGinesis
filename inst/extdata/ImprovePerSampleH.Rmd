@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 
 n_compartments <- 3
-percent_keep <- 1.0
+percent_keep <- 0.3
 
 
 # Obtains trueW, trueH from exp
@@ -52,15 +52,70 @@ trueH <- experiment_to_use$trueH
 
 ```
 
+```{r}
+# Plot the differences
+library(gridExtra)
+library(ggplot2)
+plots <- list()
+plots$plot1 <- qplot(trueH[1,], resultH.NMF[1,], main="Liver", ylim = c(0, 1.0), color=I("blue"), alpha=I(0.1)) + theme(aspect.ratio = 0.8)
+plots$plot2 <- qplot(trueH[2,], resultH.NMF[2,], main="Brain", ylim = c(0, 1.0), color=I("blue"), alpha=I(0.1))+ theme(aspect.ratio = 0.8)
+plots$plot3 <- qplot(trueH[3,], resultH.NMF[3,], main="Lung", ylim = c(0, 1.0), color=I("blue"), alpha=I(0.1))+ theme(aspect.ratio = 0.8)
+grid.arrange(plots$plot1, plots$plot2, plots$plot3, ncol=3)
+```
 
+
+## First Try - get standard deviation of residuals for all genes
+## Remove genes with highest residuals, re-run NMF once
 ```{r}
 library(matrixStats)
-# get standard deviation of each gene
-sds <- rowSds(trueMixed)
 
 # get cutoff for percent_keep% of "more accurate genes
 cutoff <- ceiling(nrow(trueMixed)*percent_keep)
 
+residuals <- vector()
+# now iterate over the samples to build the residuals matrix
+for(i in 1:ncol(resultH.NMF)) { 
+  predictedH <- resultH.NMF[,i]
+  # muliply predicted W by predicted H to get predicted
+  # mixed expression for this sample
+  predictedW <- resultW.NMF[[i]] # rearrange re-arranges each W separately for each sample
+  predictedMixed <- predictedW %*% predictedH
+  diff <- abs(predictedMixed - trueMixed[,i])
+  residuals <- cbind(residuals, diff)
+}
+
+# get the standard deviation for each gene
+sds <- rowSds(residuals)
+
+# now keep percent_keep% of genes with the smallest sd
+ranked_sds <- rank(as.numeric(sds))
+keep_indecies <- sapply(ranked_sds, function(x) x <= cutoff)
+
+# get the subset of the expressions, and re-run NMF
+subsetMixed <- trueMixed[keep_indecies,]
+subset.NMF <- runNMF(subsetMixed, rank = n_compartments)
+
+# rearrange the results, using the W from the original experiment
+subset.NMF[[1]] <- resultW.NMF
+subset.NMF <- rearrange(subset.NMF, experiment_to_use)
+
+newH <- subset.NMF[[2]]
+  
+# save just the h column for this sample
+#  newH <- cbind(newH, new_resultH.NMF[,i])
+
+```
+
+## Second Try - for each sample, remove genes with highest error
+## solve with nnls to ge the updated H for the gene
+```{r}
+
+library(matrixStats)
+library(nnls)
+# get standard deviation of each gene
+sds <- rowSds(trueMixed)
+# get cutoff for percent_keep% of "more accurate genes
+cutoff <- ceiling(nrow(trueMixed)*percent_keep)
 newH <- vector()
 # now iterate over the samples' H
 for(i in 1:ncol(resultH.NMF)) { 
@@ -79,18 +134,54 @@ for(i in 1:ncol(resultH.NMF)) {
   keep_indecies <- sapply(ranked_errors, function(x) x <= cutoff)
   #print(keep_indecies[1:20])
   #next
-  # get the subset of the expressions, and re-run NMF
-  subsetMixed <- trueMixed[keep_indecies,]
-  subset.NMF <- runNMF(subsetMixed, rank = n_compartments)
-  # rearrange the results, using the W from the original experiment
-  subset.NMF[[1]] <- resultW.NMF
-  subset.NMF <- rearrange(subset.NMF, experiment_to_use)
-  new_resultH.NMF <- subset.NMF[[2]]
-  # save just the h column for this sample
-  newH <- cbind(newH, new_resultH.NMF[,i])
+  # get the subset of the mixed expressions for this sample, and the subset of the weights
+  
+  #subsetMixed <- trueMixed[keep_indecies,i]
+  #subsetW <- predictedW[keep_indecies,]
+  subsetMixed <- trueMixed[1:50,i]
+  subsetW <- predictedW[1:50,]
+  
+  # now use NNLS to solve for h given w and mixed
+  nnls.result <- nnls(A = subsetW,b = subsetMixed)
+  
+  newH <- cbind(newH, nnls.result$x)
 }
+
 ```
 
+# Third Try  - for each sample, remove high and low expressing genes
+## solve with nnls to ge the updated H for the gene
+```{r}
+library(matrixStats)
+library(nnls)
+# get means of each gene
+means <- rowMeans(trueMixed)
+# get cutoff for percent_keep% of "more accurate genes
+cutoff <- ceiling(nrow(trueMixed)*percent_keep)
+low <- cutoff
+high <- nrow(trueMixed) - cutoff
+newH <- vector()
+# now iterate over the samples' H
+for(i in 1:ncol(resultH.NMF)) { 
+  predictedW <- resultW.NMF[[i]] # rearrange re-arranges each W separately for each sample
+  ranked_means <- rank(as.numeric(means))
+  
+  keep_indecies <- sapply(ranked_means, function(x) (x <= low || x >= high))
+  # get the subset of the mixed expressions for this sample, and the subset of the weights
+
+  
+  subsetMixed <- trueMixed[keep_indecies,i]
+  subsetW <- predictedW[keep_indecies,]
+  
+  
+  # now use NNLS to solve for h given w and mixed
+  nnls.result <- nnls(A = subsetW,b = subsetMixed)
+  
+  newH <- cbind(newH, nnls.result$x)
+}
+
+
+```
 
 #### Creates H.RMSE with RMSE between true props and estimated props across all samples for each deconvolution method
 ```{r}
