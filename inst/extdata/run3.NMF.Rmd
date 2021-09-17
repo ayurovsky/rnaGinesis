@@ -20,6 +20,7 @@ load("~/rnaGinesis/data/alisa_exp3.RData")
 ```{r}
 # Subsets only first 5000 genes of expression matrix to run NMF (to match CIBERSORT - to run fast enough)
 mixture <- experiment3$ex[1:5000,]
+# exponentiate experiment3 to try
 # Calls helper method runNMF to run NMF on mixture
 exp3.NMF <- runNMF(mixture = mixture,
                    rank = 3)

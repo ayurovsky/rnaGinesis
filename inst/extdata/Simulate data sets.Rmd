@@ -1,0 +1,226 @@
+---
+title: "Simulated Data Sets"
+output: html_notebook
+---
+
+```{r}
+library(rnaGinesis)
+library(ggplot2)
+library(reshape)
+mu <- rnaGinesis::mu
+A <- rnaGinesis::A
+```
+
+```{r Baseline}
+#Baseline setting: 
+data_1 = list()
+Samplesize = 50
+scaleFactor = rep(30, 3)
+noise_setting = 1.5
+for (i in 1:20)
+  {
+  writeLines("---------------")
+    writeLines(paste("iteration: ",i))
+    writeLines(paste("Samplesize: ",Samplesize))
+    writeLines(paste("scaleFactor: ",scaleFactor))
+    writeLines(paste("noise_setting: ",noise_setting))
+  sim.data = Complete_simulation(A_tumor = A,
+                    mu_tumor = mu,
+                    Samplesize=Samplesize,
+                    scaleFactor = scaleFactor,
+                                d.params    = c("Tumor"   = .3,
+                                                "Stromal" = .5,
+                                                "Immune"  = .1,
+                                                "Normal"  = .1),
+                    noise_setting=noise_setting,
+                    seed = 1233+i)
+    
+  names(sim.data) = c("Y", "W", "H")
+  data_1[[i]] = sim.data
+}
+names(data_1) = c("Sim 1", "Sim 2", "Sim 3", "Sim 4", "Sim 5", "Sim 6", "Sim 7", "Sim 8", "Sim 9", "Sim 10", "Sim 11", "Sim 12", "Sim 13", "Sim 14", "Sim 15", "Sim 16", "Sim 17", "Sim 18", "Sim 19", "Sim 20")
+save(data_1, file = "~/rnaGinesis/data/Setting_1.RData")
+```
+
+```{r Parameter: noise}
+#low noise
+data_2 = list()
+Samplesize = 50
+scaleFactor = rep(30, 3)
+noise_setting = 1.01
+for (i in 1:20)
+  {
+  writeLines("---------------")
+    writeLines(paste("iteration: ",i))
+    writeLines(paste("Samplesize: ",Samplesize))
+    writeLines(paste("scaleFactor: ",scaleFactor))
+    writeLines(paste("noise_setting: ",noise_setting))
+  sim.data = Complete_simulation(A_tumor = A,
+                    mu_tumor = mu,
+                    Samplesize=Samplesize,
+                    scaleFactor = scaleFactor,
+                                d.params    = c("Tumor"   = .3,
+                                                "Stromal" = .5,
+                                                "Immune"  = .1,
+                                                "Normal"  = .1),
+                    noise_setting=noise_setting,
+                    seed = 1233+i)
+    
+  names(sim.data) = c("Y", "W", "H")
+  data_2[[i]] = sim.data
+}
+names(data_2) = c("Sim 1", "Sim 2", "Sim 3", "Sim 4", "Sim 5", "Sim 6", "Sim 7", "Sim 8", "Sim 9", "Sim 10", "Sim 11", "Sim 12", "Sim 13", "Sim 14", "Sim 15", "Sim 16", "Sim 17", "Sim 18", "Sim 19", "Sim 20")
+save(data_2, file = "~/rnaGinesis/data/Setting_2.RData")
+
+#high noise
+data_3 = list()
+Samplesize = 50
+scaleFactor = rep(30, 3)
+noise_setting = 10
+for (i in 1:20)
+  {
+  writeLines("---------------")
+    writeLines(paste("iteration: ",i))
+    writeLines(paste("Samplesize: ",Samplesize))
+    writeLines(paste("scaleFactor: ",scaleFactor))
+    writeLines(paste("noise_setting: ",noise_setting))
+  sim.data = Complete_simulation(A_tumor = A,
+                    mu_tumor = mu,
+                    Samplesize=Samplesize,
+                    scaleFactor = scaleFactor,
+                                d.params    = c("Tumor"   = .3,
+                                                "Stromal" = .5,
+                                                "Immune"  = .1,
+                                                "Normal"  = .1),
+                    noise_setting=noise_setting,
+                    seed = 1233+i)
+    
+  names(sim.data) = c("Y", "W", "H")
+  data_3[[i]] = sim.data
+}
+names(data_3) = c("Sim 1", "Sim 2", "Sim 3", "Sim 4", "Sim 5", "Sim 6", "Sim 7", "Sim 8", "Sim 9", "Sim 10", "Sim 11", "Sim 12", "Sim 13", "Sim 14", "Sim 15", "Sim 16", "Sim 17", "Sim 18", "Sim 19", "Sim 20")
+save(data_3, file = "~/rnaGinesis/data/Setting_3.RData")
+```
+
+```{r Parameter: scale factor}
+#low rearrange
+data_4 = list()
+Samplesize = 50
+scaleFactor = rep(2, 3)
+noise_setting = 1.5
+for (i in 1:20)
+  {
+  writeLines("---------------")
+    writeLines(paste("iteration: ",i))
+    writeLines(paste("Samplesize: ",Samplesize))
+    writeLines(paste("scaleFactor: ",scaleFactor))
+    writeLines(paste("noise_setting: ",noise_setting))
+  sim.data = Complete_simulation(A_tumor = A,
+                    mu_tumor = mu,
+                    Samplesize=Samplesize,
+                    scaleFactor = scaleFactor,
+                                d.params    = c("Tumor"   = .3,
+                                                "Stromal" = .5,
+                                                "Immune"  = .1,
+                                                "Normal"  = .1),
+                    noise_setting=noise_setting,
+                    seed = 1233+i)
+    
+  names(sim.data) = c("Y", "W", "H")
+  data_4[[i]] = sim.data
+}
+names(data_4) = c("Sim 1", "Sim 2", "Sim 3", "Sim 4", "Sim 5", "Sim 6", "Sim 7", "Sim 8", "Sim 9", "Sim 10", "Sim 11", "Sim 12", "Sim 13", "Sim 14", "Sim 15", "Sim 16", "Sim 17", "Sim 18", "Sim 19", "Sim 20")
+save(data_4, file = "~/Box/RESEARCH/rnaGinesis/Setting_4.RData") 
+
+#high noise
+data_5 = list()
+Samplesize = 50
+scaleFactor = rep(200, 3)
+noise_setting = 1.5
+for (i in 1:20)
+  {
+  writeLines("---------------")
+    writeLines(paste("iteration: ",i))
+    writeLines(paste("Samplesize: ",Samplesize))
+    writeLines(paste("scaleFactor: ",scaleFactor))
+    writeLines(paste("noise_setting: ",noise_setting))
+  sim.data = Complete_simulation(A_tumor = A,
+                    mu_tumor = mu,
+                    Samplesize=Samplesize,
+                    scaleFactor = scaleFactor,
+                                d.params    = c("Tumor"   = .3,
+                                                "Stromal" = .5,
+                                                "Immune"  = .1,
+                                                "Normal"  = .1),
+                    noise_setting=noise_setting,
+                    seed = 1233+i)
+    
+  names(sim.data) = c("Y", "W", "H")
+  data_5[[i]] = sim.data
+}
+names(data_5) = c("Sim 1", "Sim 2", "Sim 3", "Sim 4", "Sim 5", "Sim 6", "Sim 7", "Sim 8", "Sim 9", "Sim 10", "Sim 11", "Sim 12", "Sim 13", "Sim 14", "Sim 15", "Sim 16", "Sim 17", "Sim 18", "Sim 19", "Sim 20")
+save(data_5, file = "~/Box/RESEARCH/rnaGinesis/Setting_5.RData")
+```
+
+
+```{r Parameter: sample size}
+#small sample size
+data_6 = list()
+Samplesize = 20
+scaleFactor = rep(30, 3)
+noise_setting = 1.5
+for (i in 1:20)
+  {
+  writeLines("---------------")
+    writeLines(paste("iteration: ",i))
+    writeLines(paste("Samplesize: ",Samplesize))
+    writeLines(paste("scaleFactor: ",scaleFactor))
+    writeLines(paste("noise_setting: ",noise_setting))
+  sim.data = Complete_simulation(A_tumor = A,
+                    mu_tumor = mu,
+                    Samplesize=Samplesize,
+                    scaleFactor = scaleFactor,
+                                d.params    = c("Tumor"   = .3,
+                                                "Stromal" = .5,
+                                                "Immune"  = .1,
+                                                "Normal"  = .1),
+                    noise_setting=noise_setting,
+                    seed = 1233+i)
+    
+  names(sim.data) = c("Y", "W", "H")
+  data_6[[i]] = sim.data
+}
+names(data_6) = c("Sim 1", "Sim 2", "Sim 3", "Sim 4", "Sim 5", "Sim 6", "Sim 7", "Sim 8", "Sim 9", "Sim 10", "Sim 11", "Sim 12", "Sim 13", "Sim 14", "Sim 15", "Sim 16", "Sim 17", "Sim 18", "Sim 19", "Sim 20")
+save(data_6, file = "~/Box/RESEARCH/rnaGinesis/Setting_6.RData")
+
+#big sample size
+data_7 = list()
+Samplesize = 100
+scaleFactor = rep(30, 3)
+noise_setting = 1.5
+for (i in 1:20)
+  {
+  writeLines("---------------")
+    writeLines(paste("iteration: ",i))
+    writeLines(paste("Samplesize: ",Samplesize))
+    writeLines(paste("scaleFactor: ",scaleFactor))
+    writeLines(paste("noise_setting: ",noise_setting))
+  sim.data = Complete_simulation(A_tumor = A,
+                    mu_tumor = mu,
+                    Samplesize=Samplesize,
+                    scaleFactor = scaleFactor,
+                                d.params    = c("Tumor"   = .3,
+                                                "Stromal" = .5,
+                                                "Immune"  = .1,
+                                                "Normal"  = .1),
+                    noise_setting=noise_setting,
+                    seed = 1233+i)
+    
+  names(sim.data) = c("Y", "W", "H")
+  data_7[[i]] = sim.data
+}
+names(data_7) = c("Sim 1", "Sim 2", "Sim 3", "Sim 4", "Sim 5", "Sim 6", "Sim 7", "Sim 8", "Sim 9", "Sim 10", "Sim 11", "Sim 12", "Sim 13", "Sim 14", "Sim 15", "Sim 16", "Sim 17", "Sim 18", "Sim 19", "Sim 20")
+save(data_7, file = "~/Box/RESEARCH/rnaGinesis/Setting_7.RData")
+```
+
+

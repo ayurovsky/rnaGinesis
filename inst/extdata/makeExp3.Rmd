@@ -39,8 +39,8 @@ for(i in 1:31099) {
 vec <- cbind(liver, brain, lung)
 row.names(vec) <- x
 experiment3 <- list()
-experiment3$ex <- as.matrix(parsedGSE19830$expression)
-experiment3$unmixed <- as.data.frame(vec)
+experiment3$ex <- expm1(as.matrix(parsedGSE19830$expression))
+experiment3$unmixed <- expm1(as.data.frame(vec))
 experiment3$trueH <- h
 experiment3$trueW <- experiment3$unmixed
 # vec

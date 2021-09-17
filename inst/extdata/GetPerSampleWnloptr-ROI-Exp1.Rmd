@@ -1,0 +1,137 @@
+---
+title: "ImprovePerSampleWnloptr.Rmd"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+```{r}
+
+# Obtains trueW, trueH from exp
+
+#load("~/rnaGinesis/data/alisa_toy_identical_w_simulated_h.RData")
+
+load("~/rnaGinesis/data/alisa_new_A_mu_exp1_no_noise_high_rearrange.RData")
+####
+# Obtains resultW, resultH from NMF and rearranges them to match trueW, trueH ordering
+mixture <- experiment1$ex
+# Calls helper method runNMF to run NMF on mixture 
+exp1.NMF <- runNMF(mixture, rank = 3)
+exp1.NMF <- rearrange(exp1.NMF, experiment1)
+resultW.NMF <- exp1.NMF[[1]]
+resultH.NMF <- exp1.NMF[[2]]
+####
+
+####
+experiment_to_use <- experiment1
+trueMixed <- experiment_to_use$ex
+trueH <- experiment_to_use$trueH
+####
+
+```
+
+```{r}
+#install.packages("ROI")
+library(ROI)
+#install.packages("ROI.plugin.optimx") # alabama does not enforce bound constraint
+#library(ROI.plugin.optimx)
+# https://palomar.home.ece.ust.hk/MAFS6010R_lectures/Rsession_solvers.html#conclusion
+# http://roi.r-forge.r-project.org/introduction.html
+# file:///Users/alisa/Downloads/v94i15.pdf
+
+start_time <- Sys.time()
+improvedW <- list()
+for (sample_n in 1:ncol(experiment_to_use$trueH)) {
+  #sample_n = 1
+  sample_w <- vector()
+  for (gene_n in 1:100) {
+    compartments_n <- nrow(experiment_to_use$trueH)
+    mixed <- trueMixed[gene_n,sample_n]
+    truew <- experiment_to_use$trueW[[sample_n]][gene_n,]
+    trueh <- trueH[,sample_n]
+    nmf_h <- resultH.NMF[,sample_n]
+    nmf_w <- resultW.NMF[[sample_n]][gene_n,]
+    
+    # build objective function
+    eval_f <- "function(x) { return ( "
+    for (i in 1:(compartments_n-1)){
+      eval_f <- paste0(eval_f, "(x[", i ,"] - ", nmf_w[i], ")^2 + ")
+    }
+    eval_f <- paste0(eval_f,"(x[",i+1,"] - ", nmf_w[i+1], ")^2 ) }")
+    eval_f <- eval(parse(text = eval_f)) #noquote(eval_f)
+    
+    
+    # equality constraints
+    eval_g_eq <- "function(x) { return ( "
+    for (i in 1:(compartments_n-1)){
+      eval_g_eq <- paste0(eval_g_eq, "x[", i ,"] * ", nmf_h[i], " + ")
+    }
+    eval_g_eq <-  paste0(eval_g_eq, "x[", i+1 ,"] * ", nmf_h[i+1], " - ", mixed, ") }")
+    eval_g_eq <- eval(parse(text = eval_g_eq)) #noquote(eval_g_eq)
+    
+    # lower bound constraints
+    
+    #initial values
+    x0 <- as.vector(nmf_w) #c(0,0,0)
+    
+    nlp <- OP(objective = F_objective(eval_f, n=3), 
+            constraints = F_constraint(eval_g_eq, dir = "==", rhs = 0), bounds = V_bound(lb = c(0.0001, 0.0001, 0.0001)))
+    
+    sol <- ROI_solve(nlp, solver = "alabama", start = x0)
+    
+    neww <- as.vector(sol$solution)
+    
+    sample_w <- rbind(sample_w, neww)
+  }
+  print(sample_n)
+  improvedW[[sample_n]] <- sample_w
+}
+
+improvedW_42_100 <- improvedW
+end_time <- Sys.time()
+end_time - start_time
+
+# 10 genes 1.2 sec for 1 sample
+# 100 genes 9.48 sec
+# 1000 genes 1.42 mins
+# a little more than 10x faster than nloptr, now lets look at results - alas, alabama does not enforce
+# lower bound constraints - need a hack
+
+#all(improvedW_42_100[[1]] > 0.0)
+
+```
+
+
+```{r}
+
+resultW.NMF_subset <- lapply(resultW.NMF, function(X) X[1:100,])
+
+trueW_subset <- lapply(experiment_to_use$trueW, function(X) X[1:100,])
+
+W.COSDIST <- makeW_COSDIST(trueW_subset, resultW.NMF_subset, improvedW_42_100, "NMF", "New_NMF")
+
+```
+
+
+#### Graphs violin plots with W.COSDIST values from each deconvolution method
+```{r}
+
+# melts W.COSDIST into dataframe with two variables, method (1 = CIBERSORT, 2 = NMF) and W.COSDIST across all samples for each deconvolution method 
+mydf2 <- reshape2::melt(W.COSDIST)
+mydf2 <- mydf2[,-1]
+
+names(mydf2) <- c("method", "W_COSDIST") 
+
+# plots W.COSDIST between true W and estimated W in each sample based on deconvolution method
+# make jitter reproduceable
+set.seed(1234)
+p2 <- ggplot2::ggplot(data = mydf2, ggplot2::aes(y = W_COSDIST, x= method, fill = method))
+p2 <- p2 + ggplot2::geom_violin()
+p2 <- p2 + ggplot2::geom_jitter(width = 0.1, height = 0) + ggplot2::ylim(0.0,1.0) 
+p2 <- p2 + ggplot2::labs(title="Violin Plots of Cosine Distance (COSDIST) for Gene Expression",x = "Deconvolution Method", y = "W_COSDIST") + ggplot2::theme(axis.title.x = ggplot2::element_text(size = 40)) + ggplot2::theme(axis.title.y = ggplot2::element_text(size = 40)) + ggplot2::theme(axis.text=ggplot2::element_text(size=30))
+print(p2)
+
+```

@@ -26,7 +26,7 @@ A <- init_info[[2]]
 
 # no noise = 0; medium noise = 5; high_noise = 10;
 Samplesize = 50
-scaleFactor = rep(30, 2)
+scaleFactor = rep(1000, 2)
 noise_setting = 0
 d.params = c("Tumor"   = .3,
              "Stromal" = .5,
@@ -55,11 +55,52 @@ experiment1$trueH <- trueH
 experiment1$unmixed <- meanW
 ```
 
+
 #### Saves experiment1 data to .RData file
 ```{r}
-save(experiment1, file = "~/rnaGinesis/data/alisa_new_A_mu_exp1_no_noise.RData")
+save(experiment1, file = "~/rnaGinesis/data/alisa_new_A_mu_exp1_no_noise_high_rearrange.RData")
+#save(experiment1, file = "~/rnaGinesis/data/alisa_new_A_mu_exp1_no_noise.RData")
 #save(experiment1, file = "~/rnaGinesis/data/alisa_orig_A_mu_exp1_no_noise.RData")
 #save(experiment1, file = "~/rnaGinesis/data/alisa_orig_A_mu_exp1_medium_noise.RData")
 #save(experiment1, file = "~/rnaGinesis/data/alisa_orig_A_mu_exp1_high_noise.RData")
+
+```
+
+```{r}
+# now, make the toy experiment, with 50 identical samples w, h borrowed from experiment3-LiverLungBrain
+load("~/rnaGinesis/data/alisa_exp3.RData")
+experiment1 <- list()
+# make H
+experiment1$trueH <- trueH
+#experiment1$trueH <- matrix(, nrow=3, ncol=0)
+#for (i in 1:50) {
+#  experiment1$trueH <- cbind(experiment1$trueH, as.vector(c(.3, .5, .2)))
+#}
+#experiment1$trueH <- t(experiment3$trueH)
+#experiment1$trueH <- cbind(experiment1$trueH, experiment1$trueH[,1:8]) # patch the last 8
+#colnames(experiment1$trueH) <- colnames(trueH)
+#rownames(experiment1$trueH) <- rownames(trueH)
+# make unmixed
+experiment1$unmixed <- cbind(meanW[,1], sample(meanW[,1]),  sample(meanW[,1]))
+colnames(experiment1$unmixed) <- colnames(meanW)
+rownames(experiment1$unmixed) <- rownames(meanW)
+# make trueW, same as unmixed
+experiment1$trueW <- lapply(1:50, function(X) experiment1$unmixed)
+#experiment1$trueW <- trueW
+#experiment1$unmixed <- meanW
+# make expression matrix
+experiment1$ex <- matrix(, nrow=5000, ncol=0)
+for (i in 1:50) {
+  experiment1$ex <- cbind(experiment1$ex, as.vector(experiment1$unmixed %*% experiment1$trueH[,i]))
+}
+#for (i in 1:50) {
+#  experiment1$ex <- cbind(experiment1$ex, as.vector(experiment1$trueW[[i]] %*% experiment1$trueH[,i]))
+#}
+colnames(experiment1$ex) <- colnames(ex)
+rownames(experiment1$ex) <- rownames(ex)
+
+#save(experiment1, file = "~/rnaGinesis/data/alisa_toy_identical_full_rearrange.RData")
+#save(experiment1, file = "~/rnaGinesis/data/alisa_toy_siumulated_w_llb_h.RData")
+save(experiment1, file = "~/rnaGinesis/data/alisa_toy_identical_w_simulated_h.RData")
 
 ```

@@ -9,15 +9,16 @@ library(ggplot2)
 library(reshape)
 mu <- rnaGinesis::mu
 A <- rnaGinesis::A
+
 ```
  
 
 
 ```{r}
-simresult.a <- simulate_and_test(A_tumor  = A[1:100,1:100],
-                               mu_tumor   = mu[1:100],
+simresult.a <- simulate_and_test(A_tumor  = A, #[1:100,1:100],
+                               mu_tumor   = mu, #[1:100],
                                num.sim    = 20,
-                               Samplesize  = 100,
+                               Samplesize  = 50, #100,
                                scaleFactor = rep(30, 3),
                                d.params    = c("Tumor"   = .3,
                                                "Stromal" = .5,
@@ -31,10 +32,10 @@ simresult.a <- simulate_and_test(A_tumor  = A[1:100,1:100],
 # high noise
 
 ```{r}
-simresult.b <- simulate_and_test(A_tumor  = A[1:100,1:100],
-                               mu_tumor   = mu[1:100],
+simresult.b <- simulate_and_test(A_tumor  = A, #[1:100,1:100],
+                               mu_tumor   = mu, #[1:100],
                                num.sim    = 20,
-                               Samplesize  = 100,
+                               Samplesize  = 50,
                                scaleFactor = rep(30, 3),
                                d.params    = c("Tumor"   = .3,
                                                "Stromal" = .5,

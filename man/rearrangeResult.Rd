@@ -4,7 +4,7 @@
 \alias{rearrangeResult}
 \title{Helper method to rearrange results to match truths}
 \usage{
-rearrangeResult(trueH, resultH, trueW, resultW)
+rearrangeResult(trueH, resultH, trueW, resultW, i)
 }
 \description{
 Helper method to rearrange results to match truths

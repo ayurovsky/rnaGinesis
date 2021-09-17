@@ -1,0 +1,357 @@
+---
+title: "ImprovePerSampleWnloptr.Rmd"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+```{r}
+
+# Obtains trueW, trueH from exp
+#load("~/rnaGinesis/data/alisa_new_A_mu_exp1_no_noise.RData")
+#load("~/rnaGinesis/data/alisa_exp2.RData")
+load("~/rnaGinesis/data/alisa_exp3.RData")
+
+####
+# Obtains resultW, resultH from NMF and rearranges them to match trueW, trueH ordering
+#load("~/rnaGinesis/data/alisa_new_A_mu_exp1_no_noise.NMF.result.RData")
+#exp1.NMF <- rearrange(exp1.NMF, experiment1)
+#resultW.NMF <- exp1.NMF[[1]]
+#resultH.NMF <- exp1.NMF[[2]]
+####
+
+####
+#load("~/rnaGinesis/data/alisa_exp2.NMF.result.RData")
+#exp2.NMF <- rearrange(exp2.NMF, experiment2)
+#resultW.NMF <- exp2.NMF[[1]]
+#resultH.NMF <- exp2.NMF[[2]]
+####
+
+####
+load("~/rnaGinesis/data/alisa_exp3.NMF.result.RData")
+experiment3$trueH <- t(experiment3$trueH)
+experiment3$ex <- experiment3$ex[1:5000,]
+experiment3$trueW <- lapply(seq_len(ncol(experiment3$trueH)), function(X) experiment3$trueW[1:5000,])
+exp3.NMF <- rearrange(exp3.NMF, experiment3)
+resultW.NMF <- exp3.NMF[[1]]
+resultH.NMF <- exp3.NMF[[2]]
+####
+
+####
+experiment_to_use <- experiment3
+trueMixed <- experiment_to_use$ex
+trueH <- experiment_to_use$trueH
+####
+
+```
+
+```{r}
+#install.packages('nloptr')
+#library('nloptr')
+
+start_time <- Sys.time()
+improvedW <- list()
+#for (sample_n in 1:ncol(experiment3$trueH)) {
+sample_n = 1
+sample_w <- vector()
+for (gene_n in 1:100) {
+  compartments_n <- nrow(experiment3$trueH)
+  mixed <- trueMixed[gene_n,sample_n]
+  truew <- experiment3$trueW[[sample_n]][gene_n,]
+  trueh <- trueH[,sample_n]
+  nmf_h <- resultH.NMF[,sample_n]
+  nmf_w <- resultW.NMF[[sample_n]][gene_n,]
+  
+  # build objective function
+  eval_f <- "function(x) { return ( "
+  for (i in 1:(compartments_n-1)){
+    eval_f <- paste0(eval_f, "(x[", i ,"] - ", nmf_w[i], ")^2 + ")
+  }
+  eval_f <- paste0(eval_f,"(x[",i+1,"] - ", nmf_w[i+1], ")^2 ) }")
+  eval_f <- eval(parse(text = eval_f)) #noquote(eval_f)
+  
+  
+  # equality constraints
+  eval_g_eq <- "function(x) { return ( "
+  for (i in 1:(compartments_n-1)){
+    eval_g_eq <- paste0(eval_g_eq, "x[", i ,"] * ", nmf_h[i], " + ")
+  }
+  eval_g_eq <-  paste0(eval_g_eq, "x[", i+1 ,"] * ", nmf_h[i+1], " - ", mixed, ") }")
+  eval_g_eq <- eval(parse(text = eval_g_eq)) #noquote(eval_g_eq)
+  
+  # Lower and upper bounds
+  lb <- c(0,0,0)
+  ub <- c(1.0e20,1.0e20,1.0e20) # error on Inf...
+  #initial values
+  x0 <- c(0,0,0)
+  
+  # Set optimization options.
+  local_opts <- list( "algorithm" = "NLOPT_LD_MMA", "xtol_rel" = 1.0e-15 )
+  opts <- list( "algorithm"= "NLOPT_GN_ISRES",
+  "xtol_rel"= 1.0e-15,
+  "maxeval"= 160000,
+  "local_opts" = local_opts,
+  "print_level" = 0 )
+  
+  res <- nloptr ( x0 = x0,
+                  eval_f = eval_f,
+                  lb = lb,
+                  ub = ub,
+                  eval_g_eq = eval_g_eq,
+                  opts = opts)
+  neww <- as.vector(res$solution)
+  #print(neww)
+  sample_w <- rbind(sample_w, neww)
+}
+print(sample_n)
+improvedW[[sample_n]] <- sample_w
+#}
+
+#improvedW_42_100 <- improvedW
+end_time <- Sys.time()
+end_time - start_time
+
+# 10 genes 12 seconds
+# 100 genes ~120 seconds
+```
+
+```{r}
+#install.packages('nloptr')
+#library('nloptr')
+
+# Experiment to update deltas
+
+start_time <- Sys.time()
+improvedW <- list()
+#for (sample_n in 1:ncol(experiment3$trueH)) {
+sample_n = 1
+delta_sample_w <- vector()
+
+#for (gene_n in 1:10) {
+gene_n <- 1
+compartments_n <- nrow(experiment3$trueH)
+mixed <- trueMixed[gene_n,sample_n]
+truew <- experiment3$trueW[[sample_n]][gene_n,]
+trueh <- trueH[,sample_n]
+nmf_h <- resultH.NMF[,sample_n]
+nmf_w <- resultW.NMF[[sample_n]][gene_n,]
+
+A_residual <- mixed - (nmf_w %*%nmf_h)
+
+# build objective function
+eval_f <- "function(x) { return ( "
+for (i in 1:(compartments_n-1)){
+  eval_f <- paste0(eval_f, "(x[", i ,"])^2 + ")
+}
+eval_f <- paste0(eval_f,"(x[",i+1,"])^2 ) }")
+eval_f <- eval(parse(text = eval_f)) #noquote(eval_f)
+
+
+# equality constraints
+eval_g_eq <- "function(x) { return ( "
+for (i in 1:(compartments_n-1)){
+  eval_g_eq <- paste0(eval_g_eq, "x[", i ,"] * ", nmf_h[i], " + ")
+}
+eval_g_eq <-  paste0(eval_g_eq, "x[", i+1 ,"] * ", nmf_h[i+1], " - ", A_residual, ") }")
+eval_g_eq <- eval(parse(text = eval_g_eq)) #noquote(eval_g_eq)
+
+# Lower and upper bounds - No Lower Bounds - Delta can be negative
+lb <- c(-1.0e20,-1.0e20,-1.0e20)
+ub <- c(1.0e20,1.0e20,1.0e20) # error on Inf...
+#initial values
+x0 <- c(0,0,0)
+
+# Set optimization options.
+local_opts <- list( "algorithm" = "NLOPT_LD_MMA", "xtol_rel" = 1.0e-15 )
+opts <- list( "algorithm"= "NLOPT_GN_ISRES",
+"xtol_rel"= 1.0e-15,
+"maxeval"= 160000,
+"local_opts" = local_opts,
+"print_level" = 3 )
+
+res <- nloptr ( x0 = x0,
+                eval_f = eval_f,
+                lb = lb,
+                ub = ub,
+                eval_g_eq = eval_g_eq,
+                opts = opts)
+neww <- as.vector(res$solution)
+#print(neww)
+delta_sample_w <- rbind(delta_sample_w, neww)
+#}
+print(sample_n)
+improvedW[[sample_n]] <- delta_sample_w
+#}
+
+# TODO - add delta matrix to the w matrix for the sample
+#improvedW_42_100 <- improvedW
+end_time <- Sys.time()
+end_time - start_time
+```
+
+```{r}
+#install.packages('nloptr')
+#library('nloptr')
+
+# Experiment to send in multiple optimization constraints - Failed
+
+start_time <- Sys.time()
+improvedW <- list()
+#for (sample_n in 1:ncol(experiment3$trueH)) {
+sample_n = 1
+sample_w <- vector()
+
+# Lower and upper bounds
+lb <- c()
+ub <- c() # error on Inf...
+#initial values
+x0 <- c()
+
+# Set optimization options.
+local_opts <- list( "algorithm" = "NLOPT_LD_MMA", "xtol_rel" = 1.0e-15 )
+opts <- list( "algorithm"= "NLOPT_GN_ISRES",
+"xtol_rel"= 1.0e-15,
+"maxeval"= 160000,
+"local_opts" = local_opts,
+"print_level" = 0 )
+
+# build objective function
+eval_f <- "function(x) { return ("
+# equality constraints
+eval_g_eq <- "function(x) { constr <- c("
+counter <- 0
+for (gene_n in 1:4) {
+  compartments_n <- nrow(experiment3$trueH)
+  mixed <- trueMixed[gene_n,sample_n]
+  truew <- experiment3$trueW[[sample_n]][gene_n,]
+  trueh <- trueH[,sample_n]
+  nmf_h <- resultH.NMF[,sample_n]
+  nmf_w <- resultW.NMF[[sample_n]][gene_n,]
+  
+  # objective
+  if (gene_n != 1) {
+    eval_f <- paste0(eval_f, "+ ")
+  }
+  for (i in 1:(compartments_n-1)){
+    eval_f <- paste0(eval_f, "(x[", counter + i ,"] - ", nmf_w[i], ")^2 + ")
+  }
+  eval_f <- paste0(eval_f,"(x[",counter + i+1,"] - ", nmf_w[i+1], ")^2")
+  #eval_f <- eval(parse(text = eval_f)) 
+  
+  
+  # equality constraints
+  if (gene_n != 1) {
+    eval_g_eq <- paste0(eval_g_eq, ", ")
+  }
+  for (i in 1:(compartments_n-1)){
+    eval_g_eq <- paste0(eval_g_eq, "x[", counter + i ,"] * ", nmf_h[i], " + ")
+  }
+  eval_g_eq <-  paste0(eval_g_eq, "x[", counter + i+1 ,"] * ", nmf_h[i+1], " - ", mixed)
+  #eval_g_eq <- eval(parse(text = eval_g_eq)) 
+  
+  counter <- counter + compartments_n
+  # Lower and upper bounds
+  lb <- c(lb,0,0,0)
+  ub <- c(ub,1.0e20,1.0e20,1.0e20) # error on Inf...
+  #initial values
+  x0 <- c(x0,0,0,0)
+  
+} 
+eval_f <- paste0(eval_f, ") }")
+eval_g_eq <- paste0(eval_g_eq, "); return (constr) }")
+eval_f <- eval(parse(text = eval_f))
+eval_g_eq <- eval(parse(text = eval_g_eq))
+
+res <- nloptr ( x0 = x0,
+                eval_f = eval_f,
+                lb = lb,
+                ub = ub,
+                eval_g_eq = eval_g_eq,
+                opts = opts)
+sample_w <- as.vector(res$solution)
+#sample_w <- rbind(sample_w, neww)
+
+print(sample_n)
+improvedW[[sample_n]] <- sample_w
+#}
+
+#improvedW_42_100 <- improvedW
+end_time <- Sys.time()
+end_time - start_time
+```
+
+
+```{r}
+resultW.NMF_subset <- lapply(resultW.NMF, function(X) X[1:100,])
+
+trueW_subset <- lapply(experiment_to_use$trueW, function(X) X[1:100,])
+
+W.COSDIST <- makeW_COSDIST(trueW_subset, resultW.NMF_subset, improvedW_42_100, "NMF", "New_NMF")
+
+```
+
+#### Graphs violin plots with W.COSDIST values from each deconvolution method
+```{r}
+# melts W.COSDIST into dataframe with two variables, method (1 = CIBERSORT, 2 = NMF) and W.COSDIST across all samples for each deconvolution method 
+mydf2 <- reshape2::melt(W.COSDIST)
+mydf2 <- mydf2[,-1]
+
+names(mydf2) <- c("method", "W_COSDIST") 
+
+# plots W.COSDIST between true W and estimated W in each sample based on deconvolution method
+# make jitter reproduceable
+set.seed(1234)
+p2 <- ggplot2::ggplot(data = mydf2, ggplot2::aes(y = W_COSDIST, x= method, fill = method))
+p2 <- p2 + ggplot2::geom_violin()
+p2 <- p2 + ggplot2::geom_jitter(width = 0.1, height = 0) + ggplot2::ylim(0,0.02) 
+p2 <- p2 + ggplot2::labs(title="Violin Plots of Cosine Distance (COSDIST) for Gene Expression",x = "Deconvolution Method", y = "W_COSDIST") + ggplot2::theme(axis.title.x = ggplot2::element_text(size = 40)) + ggplot2::theme(axis.title.y = ggplot2::element_text(size = 40)) + ggplot2::theme(axis.text=ggplot2::element_text(size=30))
+print(p2)
+```
+
+
+```{r}
+
+# Copied example from a blog, use for reference and debugging
+# Objective Function
+eval_f <- function(x)
+{
+return (x[1]*x[4]*(x[1] +x[2] + x[3] ) + x[3] )
+}
+
+# Inequality constraints
+eval_g_ineq <- function(x)
+{
+return (25 - x[1]*x[2]*x[3]*x[4])
+}
+# Equality constraints
+eval_g_eq <- function(x)
+{
+return ( x[1]^2 + x[2]^2 + x[3]^2 + x[4]^2 - 40 )
+}
+# Lower and upper bounds
+lb <- c(1,1,1,1)
+ub <- c(5,5,5,5)
+#initial values
+x0 <- c(1,5,5,1)
+
+# Set optimization options.
+local_opts <- list( "algorithm" = "NLOPT_LD_MMA", "xtol_rel" = 1.0e-15 )
+opts <- list( "algorithm"= "NLOPT_GN_ISRES",
+"xtol_rel"= 1.0e-15,
+"maxeval"= 160000,
+"local_opts" = local_opts,
+"print_level" = 0 )
+
+res <- nloptr ( x0 = x0,
+                eval_f = eval_f,
+                lb = lb,
+                ub = ub,
+                eval_g_ineq = eval_g_ineq,
+                eval_g_eq = eval_g_eq,
+                opts = opts
+)
+print(res$solution)
+```

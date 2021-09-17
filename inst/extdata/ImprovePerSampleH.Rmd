@@ -35,7 +35,7 @@ load("~/rnaGinesis/data/exp3.RData")
 ####
 
 ####
-load("~/rnaGinesis/data/exp3.NMF.result.RData")
+load("~/rnaGinesis/data/alisa_exp3.NMF.result.RData")
 experiment3$trueH <- t(experiment3$trueH)
 experiment3$ex <- experiment3$ex[1:5000,]
 experiment3$trueW <- lapply(seq_len(ncol(experiment3$trueH)), function(X) experiment3$trueW[1:5000,])
@@ -56,6 +56,7 @@ trueH <- experiment_to_use$trueH
 # Plot the differences
 library(gridExtra)
 library(ggplot2)
+resultH.NMF <- apply(resultH.NMF, 2, FUN = sum_to_1)
 plots <- list()
 plots$plot1 <- qplot(trueH[1,], resultH.NMF[1,], main="Liver", ylim = c(0, 1.0), color=I("blue"), alpha=I(0.1)) + theme(aspect.ratio = 0.8)
 plots$plot2 <- qplot(trueH[2,], resultH.NMF[2,], main="Brain", ylim = c(0, 1.0), color=I("blue"), alpha=I(0.1))+ theme(aspect.ratio = 0.8)
@@ -65,7 +66,7 @@ grid.arrange(plots$plot1, plots$plot2, plots$plot3, ncol=3)
 
 
 ## First Try - get standard deviation of residuals for all genes
-## Remove genes with highest residuals, re-run NMF once
+## Remove genes with highest residuals, re-run NMF once - NOT a good approach
 ```{r}
 library(matrixStats)
 

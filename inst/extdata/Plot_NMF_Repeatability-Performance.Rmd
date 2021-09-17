@@ -1,0 +1,240 @@
+---
+title: "Plot_NMF_Repeatability-Performance"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+
+```{r}
+load("~/rnaGinesis/data/alisa_exp3.RData")
+dataset <- experiment3$ex
+rank <- 3
+timing_REPEAT_exp3_df <- data.frame()
+seed <- 123456
+for (i in seq(from=100, to=1000, by=100)) {
+  times <- c()
+  for (j in c(1, 2, 3)) {
+    start_time <- Sys.time()
+    res <- repeatability_main_function(dataset, i, rank, seed)
+    end_time <- Sys.time()
+    t <- as.numeric(difftime(end_time,start_time))
+    print(t)
+    times <- c(times, t)
+  }
+  avg <- mean(times)
+  dev <- sd(times)
+  timing_REPEAT_exp3_df <- rbind(timing_REPEAT_exp3_df, data.frame(type="REPEAT", nrun=i, time = avg, sd = dev))
+  # save the file at intermediate points, so the results don't disappear if the session crashes
+  save(timing_REPEAT_exp3_df, file = "~/rnaGinesis/data/timing_REPEAT_exp3_df.RData")
+}  
+
+```
+
+
+```{r}
+load("~/rnaGinesis/data/alisa_exp3.RData")
+dataset <- experiment3$ex
+timing_NMF_exp3_df <- data.frame()
+seed <- 123456
+rank <- 3
+for (i in seq(from=100, to=1000, by=100)) {
+  times <- c()
+  for (j in c(1, 2, 3)) {
+    start_time <- Sys.time()
+    res <- NMF::nmf(dataset, rank = rank, seed = seed, nrun = i, .options = "p4")
+    end_time <- Sys.time()
+    t <- as.numeric(difftime(end_time,start_time))
+    print(t)
+    times <- c(times, t)
+  }
+  avg <- mean(times)
+  dev <- sd(times)
+  timing_NMF_exp3_df <- rbind(timing_NMF_exp3_df, data.frame(type="NMF", nrun=i, time = avg, sd = dev))
+  # save the file at intermediate points, so the results don't disappear if the session crashes
+  save(timing_NMF_exp3_df, file = "~/rnaGinesis/data/timing_NMF_exp3_df.RData")
+}  
+######
+##> timing_NMF_exp3_df <- data.frame()
+#timing_NMF_exp3_df <- rbind(timing_NMF_exp3_df, data.frame(type="NMF", nrun=100, time = 4.425084667, sd = 0.487609557))
+#timing_NMF_exp3_df <- rbind(timing_NMF_exp3_df, data.frame(type="NMF", nrun=200, time = 8.996339333, sd = 1.045581323))
+#timing_NMF_exp3_df <- rbind(timing_NMF_exp3_df, data.frame(type="NMF", nrun=300, time = 17.43118, sd = 1.541286949))
+#timing_NMF_exp3_df <- rbind(timing_NMF_exp3_df, data.frame(type="NMF", nrun=400, time = 20.90277, sd = 4.212861123))
+#timing_NMF_exp3_df <- rbind(timing_NMF_exp3_df, data.frame(type="NMF", nrun=500, time = 23.06245, sd = 2.679603642))
+#timing_NMF_exp3_df <- rbind(timing_NMF_exp3_df, data.frame(type="NMF", nrun=600, time = 27.57753333, sd = 5.075325704))
+#timing_NMF_exp3_df <- rbind(timing_NMF_exp3_df, data.frame(type="NMF", nrun=700, time = 30.16377333, sd = 2.32218961))
+##timing_NMF_exp3_df <- rbind(timing_NMF_exp3_df, data.frame(type="NMF", nrun=800, time = 32.41881333, sd = 1.385442331))
+##timing_NMF_exp3_df <- rbind(timing_NMF_exp3_df, data.frame(type="NMF", nrun=900, time = 39.72585333, sd = 6.375363562))
+##timing_NMF_exp3_df <- rbind(timing_NMF_exp3_df, data.frame(type="NMF", nrun=1000, time = 45.22994, sd = 7.535675696))
+##
+##
+##
+##
+##
+##
+#
+```
+
+
+```{r}
+library(ggplot2)
+timing_REPEAT_exp3_df[,"type"] <- "FaStaNMF"
+timing_exp3_df <- rbind(timing_REPEAT_exp3_df, timing_NMF_exp3_df)
+level_order <- factor(timing_exp3_df$nrun, level = seq(from=100, to=1000, by=100))
+p <- ggplot(timing_exp3_df, aes(x=level_order, y=time, group=type, color=type)) + 
+  geom_line() +
+  geom_pointrange(aes(ymin=time-sd, ymax=time+sd)) + 
+  ylim(0,60) +
+ggplot2::theme(
+  plot.title = ggplot2::element_text(size = 20),
+  axis.title.y = ggplot2::element_text(size = 20),
+  axis.title.x = ggplot2::element_text(size = 20), axis.text.x = ggplot2::element_text(size = 14, face="bold"), axis.text.y = ggplot2::element_text(size = 14, face="bold"), legend.position = "bottom", legend.title= element_blank(), legend.text=element_text(size=14)) + 
+  ylab("time (minutes)") + xlab("nrun") +ggtitle("LiverLungBrain: 31K genes, 42 samples")
+print(p)
+```
+
+```{r}
+load("~/rnaGinesis/data/alisa_toy_identical_w_simulated_h.RData")
+dataset <- experiment1$ex
+rank <- 3
+timing_REPEAT_exp1_df <- data.frame()
+seed <- 123456
+for (i in seq(from=100, to=1000, by=100)) {
+  times <- c()
+  for (j in c(1, 2, 3)) {
+    start_time <- Sys.time()
+    res <- repeatability_main_function(dataset, i, rank, seed, .options = "p4")
+    end_time <- Sys.time()
+    t <- as.numeric(difftime(end_time,start_time))
+    print(t)
+    times <- c(times, t)
+  }
+  avg <- mean(times)
+  dev <- sd(times)
+  timing_REPEAT_exp1_df <- rbind(timing_REPEAT_exp1_df, data.frame(type="REPEAT", nrun=i, time = avg, sd = dev))
+  # save the file at intermediate points, so the results don't disappear if the session crashes
+  save(timing_REPEAT_exp1_df, file = "~/rnaGinesis/data/timing_REPEAT_exp1_df.RData")
+}  
+```
+
+```{r}
+load("~/rnaGinesis/data/alisa_toy_identical_w_simulated_h.RData")
+dataset <- experiment1$ex
+timing_NMF_exp1_df <- data.frame()
+seed <- 123456
+rank <- 3
+for (i in seq(from=100, to=1000, by=100)) {
+  times <- c()
+  for (j in c(1, 2, 3)) {
+    start_time <- Sys.time()
+    res <- NMF::nmf(dataset, rank = rank, seed = seed, nrun = i, .options = "p4")
+    end_time <- Sys.time()
+    t <- as.numeric(difftime(end_time,start_time))
+    print(t)
+    times <- c(times, t)
+  }
+  avg <- mean(times)
+  dev <- sd(times)
+  timing_NMF_exp1_df <- rbind(timing_NMF_exp1_df, data.frame(type="NMF", nrun=i, time = avg, sd = dev))
+  # save the file at intermediate points, so the results don't disappear if the session crashes
+  save(timing_NMF_exp1_df, file = "~/rnaGinesis/data/timing_NMF_exp1_df.RData")
+}
+```
+
+
+
+```{r}
+library(ggplot2)
+timing_REPEAT_exp1_df[,"type"] <- "FaStaNMF"
+timing_exp1_df <- rbind(timing_REPEAT_exp1_df, timing_NMF_exp1_df)
+level_order <- factor(timing_exp1_df$nrun, level = seq(from=100, to=1000, by=100))
+p <- ggplot(timing_exp1_df, aes(x=level_order, y=time, group=type, color=type)) + 
+  geom_line() +
+  geom_pointrange(aes(ymin=time-sd, ymax=time+sd)) + 
+  ylim(0,60) +
+ggplot2::theme(
+  plot.title = ggplot2::element_text(size = 20),
+  axis.title.y = ggplot2::element_text(size = 20),
+  axis.title.x = element_blank(), axis.text.x = ggplot2::element_text(size = 14, face="bold"), axis.text.y = ggplot2::element_text(size = 14, face="bold"), legend.position = "none", legend.title= element_blank()) + 
+  ylab("time (minutes)") + ggtitle("Simulation: 5K genes, 50 samples")
+print(p)
+```
+
+```{r}
+load("~/rnaGinesis/data/alisa_exp2.RData")
+dataset <- experiment2$ex
+timing_NMF_exp2_df <- data.frame()
+seed <- 123456
+rank <- 3
+for (i in seq(from=100, to=1000, by=100)) {
+  times <- c()
+  for (j in c(1, 2, 3)) {
+    start_time <- Sys.time()
+    res <- NMF::nmf(dataset, rank = rank, seed = seed, nrun = i, .options = "p4")
+    end_time <- Sys.time()
+    t <- as.numeric(difftime(end_time,start_time))
+    print(t)
+    times <- c(times, t)
+  }
+  avg <- mean(times)
+  dev <- sd(times)
+  timing_NMF_exp2_df <- rbind(timing_NMF_exp2_df, data.frame(type="NMF", nrun=i, time = avg, sd = dev))
+  # save the file at intermediate points, so the results don't disappear if the session crashes
+  save(timing_NMF_exp2_df, file = "~/rnaGinesis/data/timing_NMF_exp2_df.RData")
+}
+```
+```{r}
+load("~/rnaGinesis/data/alisa_exp2.RData")
+dataset <- experiment2$ex
+rank <- 3
+timing_REPEAT_exp2_df <- data.frame()
+seed <- 123456
+for (i in seq(from=100, to=1000, by=100)) {
+  times <- c()
+  for (j in c(1, 2, 3)) {
+    start_time <- Sys.time()
+    res <- repeatability_main_function(dataset, i, rank, seed, .options = "p4")
+    end_time <- Sys.time()
+    t <- as.numeric(difftime(end_time,start_time))
+    print(t)
+    times <- c(times, t)
+  }
+  avg <- mean(times)
+  dev <- sd(times)
+  timing_REPEAT_exp2_df <- rbind(timing_REPEAT_exp2_df, data.frame(type="REPEAT", nrun=i, time = avg, sd = dev))
+  # save the file at intermediate points, so the results don't disappear if the session crashes
+  save(timing_REPEAT_exp2_df, file = "~/rnaGinesis/data/timing_REPEAT_exp2_df.RData")
+}  
+```
+
+```{r}
+library(ggplot2)
+timing_REPEAT_exp2_df[,"type"] <- "FaStaNMF"
+timing_exp2_df <- rbind(timing_REPEAT_exp2_df, timing_NMF_exp2_df)
+level_order <- factor(timing_exp2_df$nrun, level = seq(from=100, to=1000, by=100))
+p <- ggplot(timing_exp2_df, aes(x=level_order, y=time, group=type, color=type)) + 
+  geom_line() +
+  geom_pointrange(aes(ymin=time-sd, ymax=time+sd)) + 
+  ylim(0,60) +
+ggplot2::theme(
+  plot.title = ggplot2::element_text(size = 20),
+  axis.title.y = ggplot2::element_text(size = 20),
+  axis.title.x = element_blank(), axis.text.x = ggplot2::element_text(size = 14, face="bold"), axis.text.y = ggplot2::element_text(size = 14, face="bold"), legend.position = "none", legend.title= element_blank()) + 
+  ylab("time (minutes)") + ggtitle("ResampledSingleCell: 12K genes, 50 samples")
+print(p)
+```
+
+
+
+```{r}
+load("~/rnaGinesis/data/timing_REPEAT_exp1_df.RData")
+load("~/rnaGinesis/data/timing_NMF_exp1_df.RData")
+load("~/rnaGinesis/data/timing_REPEAT_exp2_df.RData")
+load("~/rnaGinesis/data/timing_NMF_exp2_df.RData")
+load("~/rnaGinesis/data/timing_REPEAT_exp3_df.RData")
+load("~/rnaGinesis/data/timing_NMF_exp3_df.RData")
+```

@@ -1,0 +1,573 @@
+---
+title: "Test_NMF_Repeatability"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+load("~/rnaGinesis/data/alisa_toy_identical_w_simulated_h.RData")
+dataset <- experiment1$ex
+if (is.null(rownames(dataset))) {
+  rownames(dataset) <- paste0("gene",as.character(1:nrow(dataset)))
+}
+rank = 3
+start_time <- Sys.time()
+results_vanilla_nmf_1_10 <- list()
+for (i in 1:10) {
+  res <- NMF::nmf(dataset, rank = rank, seed = i+123456, nrun = 1, .options = "p4")
+  results_vanilla_nmf_1_10[[i]] <- res
+  print(i)
+}  
+end_time <- Sys.time()
+end_time - start_time
+
+save(results_vanilla_nmf_1_10, file = "~/rnaGinesis/data/temp_results_vanilla_1_10.RData")
+
+```
+
+```{r}
+load("~/rnaGinesis/data/alisa_toy_identical_w_simulated_h.RData")
+dataset <- experiment1$ex
+if (is.null(rownames(dataset))) {
+  rownames(dataset) <- paste0("gene",as.character(1:nrow(dataset)))
+}
+rank = 3
+start_time <- Sys.time()
+results_vanilla_nmf_200_10 <- list()
+for (i in 1:10) {
+  res <- NMF::nmf(dataset, rank = rank, seed = i+123456, nrun = 200, .options = "p4")
+  results_vanilla_nmf_200_10[[i]] <- res
+  print(i)
+}  
+end_time <- Sys.time()
+end_time - start_time
+
+save(results_vanilla_nmf_200_10, file = "~/rnaGinesis/data/temp_results_vanilla_200_10.RData")
+
+```
+
+```{r}
+load("~/rnaGinesis/data/alisa_toy_identical_w_simulated_h.RData")
+dataset <- experiment1$ex
+if (is.null(rownames(dataset))) {
+  rownames(dataset) <- paste0("gene",as.character(1:nrow(dataset)))
+}
+rank = 3
+nrun = 200
+start_time <- Sys.time()
+results_repeat_nmf_200_10 <- list()
+for (i in 1:10) {
+  res <- repeatability_main_function(dataset, nrun, rank, i)
+  results_repeat_nmf_200_10[[i]] <- res
+  print(i)
+}  
+end_time <- Sys.time()
+end_time - start_time
+
+save(results_repeat_nmf_200_10, file = "~/rnaGinesis/data/temp_results_repeat_200_10.RData")
+
+```
+
+```{r}
+#  re-arrange relative to the true experiment, and see which one gives a better error
+
+# get trueH and trueW from the first run
+first_true <- list()
+first_true$trueW <- experiment1$trueW
+first_true$trueH <- experiment1$trueH
+# make sum to 1
+first_true$trueH <- apply(first_true$trueH, 2, FUN = sum_to_1)
+
+# fill in the h and cosdist
+W.COSDIST <- vector() #matrix(ncol = 9)
+H.RMSE <- vector() #matrix(ncol = 9)
+
+for (i in 1:10) {
+  exp <- list()
+  exp$resultW <- results_vanilla_nmf_1_10[[i]]@fit@W
+  exp$resultH <- results_vanilla_nmf_1_10[[i]]@fit@H
+  exp$resultW <- lapply(seq_len(ncol(exp$resultH)), function(X) exp$resultW)
+  # make sum to 1
+  exp$resultH <- apply(exp$resultH, 2, FUN = sum_to_1)
+  # re-arrange the results
+  exp <-rearrange(exp, first_true)
+  # get the rmse
+  rmse <- evalH.RMSE(first_true$trueH,exp$resultH) 
+  H.RMSE <- cbind(H.RMSE,rmse)
+  # get the cosine distance
+  cosdist <- evalW.COSDIST(first_true$trueW,exp$resultW)
+  W.COSDIST <- cbind(W.COSDIST, cosdist)
+}
+
+df_cosdist_vanilla_1_10 <- reshape2::melt(W.COSDIST)
+df_cosdist_vanilla_1_10 <- df_cosdist_vanilla_1_10[,-1]
+names(df_cosdist_vanilla_1_10) <- c("method", "W_COSDIST") 
+
+df_rmse_vanilla_1_10 <- reshape2::melt(H.RMSE)
+df_rmse_vanilla_1_10 <- df_rmse_vanilla_1_10[,-1]
+names(df_rmse_vanilla_1_10) <- c("method", "H_RMSE") 
+
+```
+
+```{r}
+#  re-arrange relative to the true experiment, and see which one gives a better error
+
+# get trueH and trueW from the first run
+first_true <- list()
+first_true$trueW <- experiment1$trueW
+first_true$trueH <- experiment1$trueH
+# make sum to 1
+first_true$trueH <- apply(first_true$trueH, 2, FUN = sum_to_1)
+
+# fill in the h and cosdist
+W.COSDIST <- vector() #matrix(ncol = 9)
+H.RMSE <- vector() #matrix(ncol = 9)
+
+for (i in 1:10) {
+  exp <- list()
+  exp$resultW <- results_vanilla_nmf_200_10[[i]]@fit@W
+  exp$resultH <- results_vanilla_nmf_200_10[[i]]@fit@H
+  exp$resultW <- lapply(seq_len(ncol(exp$resultH)), function(X) exp$resultW)
+  # make sum to 1
+  exp$resultH <- apply(exp$resultH, 2, FUN = sum_to_1)
+  # re-arrange the results
+  exp <-rearrange(exp, first_true)
+  # get the rmse
+  rmse <- evalH.RMSE(first_true$trueH,exp$resultH) 
+  H.RMSE <- cbind(H.RMSE,rmse)
+  # get the cosine distance
+  cosdist <- evalW.COSDIST(first_true$trueW,exp$resultW)
+  W.COSDIST <- cbind(W.COSDIST, cosdist)
+}
+
+df_cosdist_vanilla_200_10 <- reshape2::melt(W.COSDIST)
+df_cosdist_vanilla_200_10 <- df_cosdist_vanilla_200_10[,-1]
+names(df_cosdist_vanilla_200_10) <- c("method", "W_COSDIST") 
+
+df_rmse_vanilla_200_10 <- reshape2::melt(H.RMSE)
+df_rmse_vanilla_200_10 <- df_rmse_vanilla_200_10[,-1]
+names(df_rmse_vanilla_200_10) <- c("method", "H_RMSE") 
+
+```
+
+
+```{r}
+#  re-arrange relative to the true experiment, and see which one gives a better error
+
+# get trueH and trueW from the first run
+first_true <- list()
+first_true$trueW <- experiment1$trueW
+first_true$trueH <- experiment1$trueH
+# make sum to 1
+first_true$trueH <- apply(first_true$trueH, 2, FUN = sum_to_1)
+
+# fill in the h and cosdist
+W.COSDIST <- vector() #matrix(ncol = 9)
+H.RMSE <- vector() #matrix(ncol = 9)
+
+for (i in 1:10) {
+  exp <- list()
+  exp$resultW <- results_repeat_nmf_200_10[[i]]@fit@W
+  exp$resultH <- results_repeat_nmf_200_10[[i]]@fit@H
+  exp$resultW <- lapply(seq_len(ncol(exp$resultH)), function(X) exp$resultW)
+  # make sum to 1
+  exp$resultH <- apply(exp$resultH, 2, FUN = sum_to_1)
+  # re-arrange the results
+  exp <-rearrange(exp, first_true)
+  # get the rmse
+  rmse <- evalH.RMSE(first_true$trueH,exp$resultH) 
+  H.RMSE <- cbind(H.RMSE,rmse)
+  # get the cosine distance
+  cosdist <- evalW.COSDIST(first_true$trueW,exp$resultW)
+  W.COSDIST <- cbind(W.COSDIST, cosdist)
+}
+
+df_cosdist_repeat_200_10 <- reshape2::melt(W.COSDIST)
+df_cosdist_repeat_200_10 <- df_cosdist_repeat_200_10[,-1]
+names(df_cosdist_repeat_200_10) <- c("method", "W_COSDIST") 
+
+df_rmse_repeat_200_10 <- reshape2::melt(H.RMSE)
+df_rmse_repeat_200_10 <- df_rmse_repeat_200_10[,-1]
+names(df_rmse_repeat_200_10) <- c("method", "H_RMSE") 
+
+
+
+```
+
+
+```{r}
+boxplot_wcosd_nmf <- df_cosdist_vanilla_1_10
+boxplot_wcosd_nmf[,"method"] <- "NMF_1"
+boxplot_wcosd_nmf_200 <- df_cosdist_vanilla_200_10
+boxplot_wcosd_nmf_200[,"method"] <- "NMF_200"
+boxplot_wcosd_repeat_200 <- df_cosdist_repeat_200_10
+boxplot_wcosd_repeat_200[,"method"] <- "FaStaNFM_200"
+boxplot_wcosd <- rbind(boxplot_wcosd_nmf, boxplot_wcosd_nmf_200, boxplot_wcosd_repeat_200)
+level_order <- factor(boxplot_wcosd$method, level = c("NMF_1", "NMF_200", "FaStaNFM_200"))
+p4 <-ggplot2::ggplot(boxplot_wcosd, ggplot2::aes(x=level_order, y=W_COSDIST, color=method)) +
+  ggplot2::geom_boxplot() + ggplot2::labs(title="Simulation Dataset: Cosine Distance for Gene Expression") + ylim(0,0.00025) + 
+  ggplot2::theme(
+  plot.title = ggplot2::element_text(size = 20),
+  axis.title.y = ggplot2::element_text(size = 20),
+  axis.title.x = element_blank(), axis.text.x = ggplot2::element_text(size = 14, face="bold"), axis.text.y = ggplot2::element_text(size = 14, face="bold"), legend.position = "none", legend.title= element_blank()) + 
+  ylab("W COSDIST") + ggtitle("Simulation")
+print(p4)
+```
+
+```{r}
+boxplot_rmse_nmf <- df_rmse_vanilla_1_10
+boxplot_rmse_nmf[,"method"] <- "NMF_1"
+boxplot_rmse_nmf_200 <- df_rmse_vanilla_200_10
+boxplot_rmse_nmf_200[,"method"] <- "NMF_200"
+boxplot_rmse_repeat_200 <- df_rmse_repeat_200_10
+boxplot_rmse_repeat_200[,"method"] <- "FaStaNFM_200"
+boxplot_rmse <- rbind(boxplot_rmse_nmf, boxplot_rmse_nmf_200, boxplot_rmse_repeat_200)
+level_order <- factor(boxplot_rmse$method, level = c("NMF_1", "NMF_200", "FaStaNFM_200"))
+p4 <-ggplot2::ggplot(boxplot_rmse, ggplot2::aes(x=level_order, y=H_RMSE, color=method)) +
+  ggplot2::geom_boxplot() +  
+  ggplot2::theme(
+  plot.title = ggplot2::element_text(size = 20),
+  axis.title.y = ggplot2::element_text(size = 20),
+  axis.title.x = element_blank(), axis.text.x = ggplot2::element_text(size = 14, face="bold"), axis.text.y = ggplot2::element_text(size = 14, face="bold"), legend.position = "none", legend.title= element_blank()) + 
+  ylab("H RMSE") + ggtitle("Simulation")
+print(p4)
+```
+
+```{r}
+# get the p-values for the 200 run
+repeat_200 <- as.vector(df_cosdist_repeat_200_10[,"W_COSDIST"])
+vanilla_200 <- as.vector(df_cosdist_vanilla_200_10[,"W_COSDIST"])
+t.test(repeat_200, y=vanilla_200)
+
+h_repeat_200 <- as.vector(df_rmse_repeat_200_10[,"H_RMSE"])
+h_vanilla_200 <- as.vector(df_rmse_vanilla_200_10[,"H_RMSE"])
+t.test(h_repeat_200, y=h_vanilla_200)
+
+```
+
+
+
+
+```{r}
+# EVERYTHING Below this point is old
+```
+
+```{r}
+#Experiment to see the reproduceability of Vanillay NMF by seeding NMF with results from a previous run
+load("~/rnaGinesis/data/alisa_toy_identical_w_simulated_h.RData")
+dataset <- experiment1$ex
+if (is.null(rownames(dataset))) {
+  rownames(dataset) <- paste0("gene",as.character(1:nrow(dataset)))
+}
+# order dataset with most variable genes first
+d_decreasing <- dataset[order(rowVars(dataset), decreasing = TRUE),]
+# get names of rest of genes, not counting the 10 most variable
+all_below_1K <- rownames(d_decreasing[-(1:10),])
+rank = 3
+start_time <- Sys.time()
+results_vanilla_nmf_30 <- list()
+results_vanilla_nmf_30_seed_model <- list()
+for (i in 1:30) {
+  res <- NMF::nmf(dataset, rank = rank, seed = i+123456, nrun = 1, .options = "p4")
+  # for the seed model, set all the rest of the less variable genes to 0.01
+  # make seed 
+  seed_W <- res@fit@W
+  # now, set everything in W to 0.01 and in H to 0.01
+  #seed_W[all_below_1K,] <- 0.01
+  #seed_W[,] <- 0.01
+  seed_model <- NMF::nmfModel(rank = rank, W = seed_W, H = res@fit@H)
+  seed_res <- NMF::nmf(dataset, rank = rank, seed = seed_model, nrun = 1, .options = "p4")
+  results_vanilla_nmf_30[[i]] <- res
+  results_vanilla_nmf_30_seed_model[[i]] <- seed_res
+  print(i)
+}  
+end_time <- Sys.time()
+end_time - start_time
+
+save(results_vanilla_nmf_30, file = "~/rnaGinesis/data/temp_results_vanilla_30.RData")
+save(results_vanilla_nmf_30_seed_model, file = "~/rnaGinesis/data/temp_results_vanilla_30_seed_model.RData")
+
+
+
+```
+
+## R Markdown
+```{r}
+#load("~/rnaGinesis/data/alisa_new_A_mu_exp1_no_noise_high_rearrange.RData")
+#load("~/rnaGinesis/data/alisa_toy_identical_full_rearrange.RData")
+load("~/rnaGinesis/data/alisa_toy_identical_w_simulated_h.RData")
+
+dataset <- experiment1$ex
+rank = 3
+#result = NMF::nmf(x = dataset, rank = rank, seed = seed)
+.options = "p4"
+start_time <- Sys.time()
+nrun = 300
+results_repeat_300_50_10_10 <- list()
+#results_vanilla_nmf_30_seed_model <- list()
+for (i in 1:10) {
+  res <- repeatability_main_function(dataset, nrun, rank, i)
+  results_repeat_300_50_10_10[[i]] <- res
+  
+  #res <- results_repeat_300_50_10_10[[i]]
+  #seed_model <- NMF::nmfModel(rank = rank, W = res@fit@W, H = res@fit@H)
+  #seed_res <- NMF::nmf(dataset, rank = rank, seed = seed_model, nrun = 1, .options = "p4")
+  #results_vanilla_nmf_30_seed_model[[i]] <- seed_res
+  print(i)
+}
+nrun = 50
+for (i in 11:20) {
+  res <- repeatability_main_function(dataset, nrun, rank, i)
+  results_repeat_300_50_10_10[[i]] <- res
+  
+  #res <- results_repeat_300_50_10_10[[i]]
+  #seed_model <- NMF::nmfModel(rank = rank, W = res@fit@W, H = res@fit@H)
+  #seed_res <- NMF::nmf(dataset, rank = rank, seed = seed_model, nrun = 1, .options = "p4")
+  #results_vanilla_nmf_30_seed_model[[i]] <- seed_res
+  print(i)
+}
+end_time <- Sys.time()
+end_time - start_time
+
+save(results_repeat_300_50_10_10, file = "~/rnaGinesis/data/temp_results_repeat_300_50_10_10.RData")
+#save(results_vanilla_nmf_30_seed_model, file = "~/rnaGinesis/data/temp_results_vanilla_30_seed_model.RData")
+
+```
+
+```{r}
+# Test Experiment1 correlation matrix
+#load("~/rnaGinesis/data/alisa_new_A_mu_exp1_no_noise_high_rearrange.RData")
+load("~/rnaGinesis/data/alisa_toy_identical_full_rearrange.RData")
+meanW <- experiment1$unmixed
+cor = cor(meanW, meanW)
+cor
+cor = cor(meanW, experiment1$ex)
+cor
+cosdist <- evalW.COSDIST(experiment1$unmixed,experiment1$trueW[[1]] %*% experiment1$trueH[,1])
+```
+
+
+
+```{r}
+start_time <- Sys.time()
+results_vanilla_nmf_30 <- list()
+for (i in 1:30) {
+  #rand_seed <- 123456 + i*10000 + i*100
+  rand_seed <- i
+  res <- NMF::nmf(dataset, rank = rank, seed = rand_seed, nrun = 3, .options = "p4")
+  results_vanilla_nmf_30[[i]] <- res
+  print(i)
+}  
+end_time <- Sys.time()
+end_time - start_time
+
+save(results_vanilla_nmf_30, file = "~/rnaGinesis/data/temp_results_vanilla_30.RData")
+```
+
+```{r}
+first_true <- list()
+first_true$trueW <- results_repeat_150_10[[1]]@fit@W
+first_true$trueH <- results_repeat_150_10[[1]]@fit@H
+seed_model <- NMF::nmfModel(rank = rank, W = first_true$trueW, H = matrix(0.33333, nrow= nrow(first_true$trueH), ncol = ncol(first_true$trueH)))
+new_res <- NMF::nmf(dataset, rank = rank, seed = seed_model, nrun = 1, .options = "p4")
+exp <- list()
+exp$resultW <- new_res@fit@W
+exp$resultH <- new_res@fit@H
+  
+
+```
+
+
+```{r}
+vanilla_true <- list()
+vanilla_true$trueW <- results_vanilla_nmf_10[[1]]@fit@W
+vanilla_true$trueH <- results_vanilla_nmf_10[[1]]@fit@H
+seed_model <- NMF::nmfModel(rank = rank, W = vanilla_true$trueW, H = matrix(0.33333, nrow= nrow(vanilla_true$trueH), ncol = ncol(vanilla_true$trueH)))
+new_res <- NMF::nmf(dataset, rank = rank, seed = seed_model, nrun = 1, .options = "p4")
+vanilla_exp <- list()
+vanilla_exp$resultW <- new_res@fit@W
+vanilla_exp$resultH <- new_res@fit@H
+  
+
+```
+
+
+```{r}
+# need to re-arrange the results of all returned NMF runs, both repeatability and vanilla
+# relative to each other, at least, to get the idea of the error
+# later, re-arrange relative to the true experiment, and see which one gives a better error
+
+# get trueH and trueW from the first run
+first_true <- list()
+#first_true$trueW <- results_vanilla_nmf_300[[1]]@fit@W
+#first_true$trueH <- results_vanilla_nmf_300[[1]]@fit@H
+#first_true$trueW <- lapply(seq_len(ncol(first_true$trueH)), function(X) first_true$trueW)
+first_true$trueW <- experiment1$trueW
+first_true$trueH <- experiment1$trueH
+# make sum to 1
+first_true$trueH <- apply(first_true$trueH, 2, FUN = sum_to_1)
+
+# fill in the h and cosdist
+W.COSDIST <- vector() #matrix(ncol = 9)
+H.RMSE <- vector() #matrix(ncol = 9)
+
+for (i in 1:20) {
+  exp <- list()
+  exp$resultW <- results_vanilla_nmf_30_seed_model[[i]]@fit@W
+  exp$resultH <- results_vanilla_nmf_30_seed_model[[i]]@fit@H
+  exp$resultW <- lapply(seq_len(ncol(exp$resultH)), function(X) exp$resultW)
+  # make sum to 1
+  exp$resultH <- apply(exp$resultH, 2, FUN = sum_to_1)
+  # re-arrange the results
+  exp <-rearrange(exp, first_true)
+  # get the rmse
+  rmse <- evalH.RMSE(first_true$trueH,exp$resultH) 
+  H.RMSE <- cbind(H.RMSE,rmse)
+  # get the cosine distance
+  cosdist <- evalW.COSDIST(first_true$trueW,exp$resultW)
+  W.COSDIST <- cbind(W.COSDIST, cosdist)
+}
+
+```
+
+
+```{r}
+# melts H.RMSE into dataframe with two variables, method (1 = CIBERSORT, 2 = NMF) and H.RMSE across all samples for each deconvolution method 
+mydf <- reshape2::melt(H.RMSE)
+mydf <- mydf[,-1]
+names(mydf) <- c("method", "H_RMSE") 
+
+# plots H.RMSE between true proportions and estimated proportions in each sample based on deconvolution method
+# make jitter reproduceable
+set.seed(1234)
+p <- ggplot2::ggplot(data = mydf, ggplot2::aes(y = H_RMSE, x= method, fill = method))
+p <- p + ggplot2::geom_violin()
+p <- p + ggplot2::geom_jitter(width = 0.1, height = 0) + ggplot2::ylim(0,0.15) 
+p <- p + ggplot2::labs(title="Violin Plots of Root Mean Squared Error (RMSE) for Proportions",
+                       x = "Deconvolution Method",
+                       y = "H_RMSE")
+p <- p + ggplot2::theme(axis.title.x = ggplot2::element_text(size = 40)) 
+p <- p +  ggplot2::theme(axis.title.y = ggplot2::element_text(size = 40)) 
+p <- p +  ggplot2::theme(axis.text = ggplot2::element_text(size=30))
+
+print(p)
+```
+
+```{r}
+# melts W.COSDIST into dataframe with two variables, method (1 = CIBERSORT, 2 = NMF) and W.COSDIST across all samples for each deconvolution method 
+mydf2 <- reshape2::melt(W.COSDIST)
+mydf2 <- mydf2[,-1]
+
+names(mydf2) <- c("method", "W_COSDIST") 
+
+# plots W.COSDIST between true W and estimated W in each sample based on deconvolution method
+# make jitter reproduceable
+set.seed(1234)
+p2 <- ggplot2::ggplot(data = mydf2, ggplot2::aes(y = W_COSDIST, x= method, fill = method))
+p2 <- p2 + ggplot2::geom_violin()
+p2 <- p2 + ggplot2::geom_jitter(width = 0.1, height = 0) + ggplot2::ylim(0,0.00025) 
+p2 <- p2 + ggplot2::labs(title="Violin Plots of Cosine Distance (COSDIST) for Gene Expression",x = "Deconvolution Method", y = "W_COSDIST") + ggplot2::theme(axis.title.x = ggplot2::element_text(size = 40)) + ggplot2::theme(axis.title.y = ggplot2::element_text(size = 40)) + ggplot2::theme(axis.text=ggplot2::element_text(size=30))
+print(p2)
+```
+
+```{r}
+# need to re-arrange the results of all returned NMF runs, both repeatability and vanilla
+# relative to each other, at least, to get the idea of the error
+# later, re-arrange relative to the true experiment, and see which one gives a better error
+
+# get trueH and trueW from the first run
+first_true <- list()
+#first_true$trueW <- results_repeat_300_50_10_10[[1]]@fit@W
+#first_true$trueH <- results_repeat_300_50_10_10[[1]]@fit@H
+#first_true$trueW <- lapply(seq_len(ncol(first_true$trueH)), function(X) first_true$trueW)
+first_true$trueW <- experiment1$trueW
+first_true$trueH <- experiment1$trueH
+# make sum to 1
+first_true$trueH <- apply(first_true$trueH, 2, FUN = sum_to_1)
+
+# fill in the h and cosdist
+m_W.COSDIST <- vector() #matrix(ncol = 9)
+m_H.RMSE <- vector() #matrix(ncol = 9)
+
+for (i in 1:20) {
+  exp <- list()
+  exp$resultW <- results_repeat_300_50_10_10[[i]]@fit@W
+  exp$resultH <- results_repeat_300_50_10_10[[i]]@fit@H
+  
+  #exp$resultW <- results_vanilla_nmf_30_seed_model[[i]]@fit@W
+  #exp$resultH <- results_vanilla_nmf_30_seed_model[[i]]@fit@H
+  exp$resultW <- lapply(seq_len(ncol(exp$resultH)), function(X) exp$resultW)
+  # make sum to 1
+  exp$resultH <- apply(exp$resultH, 2, FUN = sum_to_1)
+  #print("W")
+  #print(exp$resultW[[1]][1,]%*%exp$resultH[,1])
+  #print(cor(first_true$trueW[[1]], exp$resultW[[1]]))
+  # re-arrange the results
+  exp <-rearrange(exp, first_true)
+  #print(exp$resultW[[1]][1,]%*%exp$resultH[,1])
+  # get the rmse
+  rmse <- evalH.RMSE(first_true$trueH,exp$resultH) 
+  m_H.RMSE <- cbind(m_H.RMSE,rmse)
+  # get the cosine distance
+  cosdist <- evalW.COSDIST(first_true$trueW,exp$resultW)
+  m_W.COSDIST <- cbind(m_W.COSDIST, cosdist)
+}
+
+```
+
+```{r}
+# melts H.RMSE into dataframe with two variables, method (1 = CIBERSORT, 2 = NMF) and H.RMSE across all samples for each deconvolution method 
+m_mydf <- reshape2::melt(m_H.RMSE)
+m_mydf <- m_mydf[,-1]
+names(m_mydf) <- c("method", "H_RMSE") 
+
+# plots H.RMSE between true proportions and estimated proportions in each sample based on deconvolution method
+# make jitter reproduceable
+set.seed(1234)
+#p <- ggplot2::ggplot(data = m_mydf, ggplot2::aes(y = H_RMSE, x= method, fill = method))
+p <- ggplot2::ggplot() + ggplot2::geom_point(data = m_mydf, ggplot2::aes(y = H_RMSE, x= method, fill = method), color="blue")
+p <- p + ggplot2::geom_point(data = mydf, ggplot2::aes(y = H_RMSE, x= method, fill = method), color="black")
+p <- p + ggplot2::geom_violin()
+p <- p + ggplot2::geom_jitter(width = 0.1, height = 0) + ggplot2::ylim(0,0.15) 
+p <- p + ggplot2::labs(title="Violin Plots of Root Mean Squared Error (RMSE) for Proportions",
+                       x = "Deconvolution Method",
+                       y = "H_RMSE")
+p <- p + ggplot2::theme(axis.title.x = ggplot2::element_text(size = 40)) 
+p <- p +  ggplot2::theme(axis.title.y = ggplot2::element_text(size = 40)) 
+p <- p +  ggplot2::theme(axis.text = ggplot2::element_text(size=30))
+
+print(p)
+```
+
+```{r}
+# melts W.COSDIST into dataframe with two variables, method (1 = CIBERSORT, 2 = NMF) and W.COSDIST across all samples for each deconvolution method 
+m_mydf2 <- reshape2::melt(m_W.COSDIST)
+m_mydf2 <- m_mydf2[,-1]
+
+names(m_mydf2) <- c("method", "W_COSDIST") 
+
+# plots W.COSDIST between true W and estimated W in each sample based on deconvolution method
+# make jitter reproduceable
+set.seed(1234)
+#p2 <- ggplot2::ggplot(data = mydf2, ggplot2::aes(y = W_COSDIST, x= method, fill = method))
+p2 <- ggplot2::ggplot() + ggplot2::geom_point(data = m_mydf2, ggplot2::aes(y = W_COSDIST, x= method, fill = method), color = "blue")
+p2 <- p2 + ggplot2::geom_point(data = mydf2, ggplot2::aes(y = W_COSDIST, x= method, fill = method), color = "black")
+p2 <- p2 + ggplot2::geom_violin()
+p2 <- p2 + ggplot2::geom_jitter(width = 0.1, height = 0) + ggplot2::ylim(0.0, 0.00025) 
+p2 <- p2 + ggplot2::labs(title="Violin Plots of Cosine Distance (COSDIST) for Gene Expression",x = "Deconvolution Method", y = "W_COSDIST") + ggplot2::theme(axis.title.x = ggplot2::element_text(size = 40)) + ggplot2::theme(axis.title.y = ggplot2::element_text(size = 40)) + ggplot2::theme(axis.text=ggplot2::element_text(size=30))
+print(p2)
+```
+
+```{r}
+boxplot_wcosd_nmf <- mydf2
+boxplot_wcosd_nmf[,"method"] <- "NMF"
+boxplot_wcosd_repeat <- m_mydf2
+boxplot_wcosd_repeat[,"method"] <- "REPEAT"
+boxplot_wcosd <- rbind(boxplot_wcosd_nmf, boxplot_wcosd_repeat)
+p4 <-ggplot2::ggplot(boxplot_wcosd, ggplot2::aes(x=method, y=W_COSDIST, color=method)) +
+  ggplot2::geom_boxplot() + ggplot2::labs(title="Simulation Dataset: Cosine Distance for Gene Expression")
+print(p4)
+```
