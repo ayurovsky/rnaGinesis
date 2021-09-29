@@ -1,0 +1,72 @@
+---
+title: "make_Dataset_Simulation"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+### Creates simulated data and saves expression matrix, trueH, trueW, and unmixed data to exp1.RData
+
+#### Creates simulated data with 3 compartments, sample size = 50, noise_setting = TBD
+```{r}
+init_info <- calculate_initial_mu_and_A()
+mu <- init_info[[1]]
+A <- init_info[[2]]
+
+# no noise = 0; medium noise = 5; high_noise = 10;
+Samplesize = 50
+scaleFactor = rep(1000, 2)
+noise_setting = 0
+d.params = c("Tumor"   = .3,
+             "Stromal" = .5,
+             "Normal"  = .2)
+sim.data <- Complete_simulation(A_tumor = A,
+                               mu_tumor = mu, 
+                               Samplesize = Samplesize,
+                               scaleFactor = scaleFactor,
+                               d.params = d.params,
+                               noise_setting = noise_setting,
+                               seed = 1234)
+```
+
+#### Obtains expression matrix with mixture data, trueW, trueH, signature matrices 
+```{r}
+ex <- sim.data[[1]]
+meanW <- sim.data[[2]]
+trueH <- sim.data[[3]]
+trueW <- sim.data[[4]]
+
+Dataset_Simulation <- list()
+Dataset_Simulation$ex <- ex
+Dataset_Simulation$trueW <- trueW
+Dataset_Simulation$trueH <- trueH
+Dataset_Simulation$unmixed <- meanW
+```
+
+
+```{r}
+# use the simulated H, but for W, make all samples identical
+Dataset_Simulation <- list()
+# make H
+Dataset_Simulation$trueH <- trueH
+# make unmixed
+Dataset_Simulation$unmixed <- cbind(meanW[,1], sample(meanW[,1]),  sample(meanW[,1]))
+colnames(Dataset_Simulation$unmixed) <- colnames(meanW)
+rownames(Dataset_Simulation$unmixed) <- rownames(meanW)
+# make trueW, same as unmixed
+Dataset_Simulation$trueW <- lapply(1:50, function(X) Dataset_Simulation$unmixed)
+# make expression matrix
+Dataset_Simulation$ex <- matrix(, nrow=5000, ncol=0)
+for (i in 1:50) {
+  Dataset_Simulation$ex <- cbind(Dataset_Simulation$ex, as.vector(Dataset_Simulation$unmixed %*% Dataset_Simulation$trueH[,i]))
+}
+colnames(Dataset_Simulation$ex) <- colnames(ex)
+rownames(Dataset_Simulation$ex) <- rownames(ex)
+
+save(Dataset_Simulation, file = "~/rnaGinesis/data/Dataset_Simulation.RData")
+
+```

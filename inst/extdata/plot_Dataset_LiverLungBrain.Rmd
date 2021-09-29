@@ -1,0 +1,97 @@
+---
+title: "plot_Dataset_LiverLungBrain"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+## R Markdown
+
+### Makes plots to evaluate deconvolution methods on brain, liver, lung mixture data
+
+#### Obtain trueH, trueW and resultH, resultW from each deconvolution method
+```{r}
+# Obtains trueW, trueH from .RData
+load("~/rnaGinesis/data/Dataset_LiverLungBrain.RData")
+Dataset_LiverLungBrain$trueH <- t(Dataset_LiverLungBrain$trueH)
+Dataset_LiverLungBrain$trueW <- as.matrix(Dataset_LiverLungBrain$trueW)
+# make a list of identical Ws because rearrange expects them...
+Dataset_LiverLungBrain$trueW <- lapply(seq_len(ncol(Dataset_LiverLungBrain$trueH)), function(X) Dataset_LiverLungBrain$trueW)
+
+trueW <- Dataset_LiverLungBrain$trueW
+trueH <- Dataset_LiverLungBrain$trueH
+
+# Obtains resultW, resultH from NMF and rearranges them to match trueW, trueH ordering
+load("~/rnaGinesis/data/Dataset_LiverLungBrain.NMF.result.RData")
+
+Dataset_LiverLungBrain.NMF <- rearrange(Dataset_LiverLungBrain.NMF, Dataset_LiverLungBrain)
+
+resultW.NMF <- Dataset_LiverLungBrain.NMF[[1]]
+resultH.NMF <- Dataset_LiverLungBrain.NMF[[2]]
+
+```
+
+#### Creates H.RMSE with RMSE between true props and estimated props across all samples for each deconvolution method
+```{r}
+# Normalizes resultH so that proportions sum to 1
+resultH.NMF <- apply(resultH.NMF, 2, FUN = sum_to_1)
+
+# Obtains RMSE for each sample between true proportions and estimated proportions
+H.RMSE <- makeH.RMSE(trueH, resultH.NMF, resultH.NMF, "NMF", "TBD_Method")
+
+```
+
+#### Graphs violin plot with H.RMSE values from each deconvolution method
+```{r}
+# melts H.RMSE into dataframe with two variables and H.RMSE across all samples for each deconvolution method 
+mydf <- reshape2::melt(H.RMSE)
+mydf <- mydf[,-1]
+names(mydf) <- c("method", "H_RMSE") 
+
+# plots H.RMSE between true proportions and estimated proportions in each sample based on deconvolution method
+# make jitter reproduceable
+set.seed(1234)
+p <- ggplot2::ggplot(data = mydf, ggplot2::aes(y = H_RMSE, x= method, fill = method))
+p <- p + ggplot2::geom_violin()
+p <- p + ggplot2::geom_jitter(width = 0.1, height = 0) #+ ggplot2::ylim(0,1) 
+p <- p + ggplot2::labs(title="Violin Plots of Root Mean Squared Error (RMSE) for Proportions",
+                       x = "Deconvolution Method",
+                       y = "H_RMSE")
+p <- p + ggplot2::theme(axis.title.x = ggplot2::element_text(size = 40)) 
+p <- p +  ggplot2::theme(axis.title.y = ggplot2::element_text(size = 40)) 
+p <- p +  ggplot2::theme(axis.text = ggplot2::element_text(size=30))
+
+print(p)
+```
+
+#### Creates W.COSDIST with COSDIST between true cell-type specific gene expression profiles and estimated gene expression profiles for each sample
+```{r}
+
+W.COSDIST <- makeW_COSDIST(trueW, resultW.NMF, resultW.NMF, "NMF", "TBD_Method")
+
+```
+
+#### Graphs violin plots with W.COSDIST values from each deconvolution method
+```{r}
+# melts W.COSDIST into dataframe with two variable and W.COSDIST across all samples for each deconvolution method 
+mydf2 <- reshape2::melt(W.COSDIST)
+mydf2 <- mydf2[,-1]
+
+names(mydf2) <- c("method", "W_COSDIST") 
+
+# plots W.COSDIST between true W and estimated W in each sample based on deconvolution method
+# make jitter reproduceable
+set.seed(1234)
+p2 <- ggplot2::ggplot(data = mydf2, ggplot2::aes(y = W_COSDIST, x= method, fill = method))
+p2 <- p2 + ggplot2::geom_violin()
+p2 <- p2 + ggplot2::geom_jitter(width = 0.1, height = 0) #+ ggplot2::ylim(0,1) 
+p2 <- p2 + ggplot2::labs(title="Violin Plots of Cosine Distance (COSDIST) for Gene Expression",x = "Deconvolution Method", y = "W_COSDIST") + ggplot2::theme(axis.title.x = ggplot2::element_text(size = 40)) + ggplot2::theme(axis.title.y = ggplot2::element_text(size = 40)) + ggplot2::theme(axis.text=ggplot2::element_text(size=30))
+print(p2)
+```
+
+
+

@@ -1,0 +1,61 @@
+---
+title: "make_Dataset_ResampledSingleCell"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+### Creates mixture data from scRNA-seq data and saves expression matrix, trueH, trueW, unmixed
+
+#### Load parsed scRNA-seq data 
+```{r}
+load("~/rnaGinesis/data/muraro.RData")
+```
+
+#### Creates mu (avg W) with cell-type gene expression profiles
+```{r}
+mu   = makeCentroid(data)
+
+# Subsets mu to contain gene expression profiles for 3 most abundant cell types
+mu   = subsetCentroid(data, mu, 3)
+```
+
+
+##### Creates H with cell-type proportions in each sample, dimensions cell types by samples 
+```{r}
+# Creates H with 3 cell types, Samplesize = 50
+Samplesize = 50
+d.params   = c("alpha"  = 0.5,
+               "beta"   = 0.2,
+               "duct" = 0.3)
+trueH      = sim_H(S = Samplesize,
+           d.params = d.params)
+``` 
+
+#### Obtains mixture expression matrix data and list of individual Ws for each sample
+```{r}
+total  = 500 # Number of cells want to sample out of population of all cells in data
+result = make_W(data, 
+                 trueH, 
+                 total)
+ex     = result[[1]]
+trueW  = result[[2]]
+```
+
+#### Saves expression matrix, trueW, trueH, unmixed signatures (mu)
+```{r}
+Dataset_ResampledSingleCell         = list()
+Dataset_ResampledSingleCell$ex      = ex
+Dataset_ResampledSingleCell$trueW   = trueW
+Dataset_ResampledSingleCell$trueH   = trueH
+Dataset_ResampledSingleCell$unmixed = mu
+```
+
+#### Saves Dataset_ResampledSingleCell data to .RData file
+```{r}
+save(Dataset_ResampledSingleCell, file = "~/rnaGinesis/data/Dataset_ResampledSingleCell.RData")
+```

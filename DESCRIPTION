@@ -1,0 +1,16 @@
+Package: rnaGinesis
+Type: Package
+Title: Simulate gene expression data
+Version: 0.1.0
+Author: Richard Moffitt
+Maintainer: <richard.moffitt@stonybrook.edu>
+Description: Simulate gene expression data
+License: MIT
+LazyData: TRUE
+RoxygenNote: 7.1.2
+Suggests: testthat
+Imports: RColorBrewer,
+         ggplot2,
+         gplots,
+         plyr
+Encoding: UTF-8

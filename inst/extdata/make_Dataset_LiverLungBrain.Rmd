@@ -1,0 +1,46 @@
+---
+title: "make_Dataset_LiverLungBrain"
+output: html_notebook
+---
+
+
+```{r}
+load("~/rnaGinesis/data/datasetGSE19830_LiverLungBrainRaw.RData")
+tab = parsedGSE19830
+w <- as.matrix(tab$sampleInfo@data$source_name_ch1)
+h = matrix(nrow = 42, ncol = 3)
+for (i in 1:42) {
+  h[i,] <- (as.numeric(strsplit(as.character(w[i][1]), split=" ")[[1]][c(1, 5, 9)]))
+}
+h <- h/100
+h 
+w[1]
+
+x <- row.names(tab$expression)
+liver <- vector()
+for(i in 1:31099) {
+  liver <- c(liver, mean(tab$expression[i,1:3]))
+}
+
+brain <- vector()
+for(i in 1:31099) {
+  brain <- c(brain, mean(tab$expression[i,4:6]))
+}
+
+lung <- vector()
+for(i in 1:31099) {
+  lung <- c(lung, mean(tab$expression[i,7:9]))
+}
+
+vec <- cbind(liver, brain, lung)
+row.names(vec) <- x
+Dataset_LiverLungBrain <- list()
+Dataset_LiverLungBrain$ex <- expm1(as.matrix(parsedGSE19830$expression))
+Dataset_LiverLungBrain$unmixed <- expm1(as.data.frame(vec))
+Dataset_LiverLungBrain$trueH <- h
+Dataset_LiverLungBrain$trueW <- Dataset_LiverLungBrain$unmixed
+
+save(Dataset_LiverLungBrain, file = "~/rnaGinesis/data/Dataset_LiverLungBrain.RData")
+
+```
+

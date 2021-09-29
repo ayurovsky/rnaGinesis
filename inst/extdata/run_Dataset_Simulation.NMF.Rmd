@@ -1,0 +1,29 @@
+---
+title: "run_Dataset_Simulation.NMF"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+### Runs NMF on expression matrix from simulated data saved in .RData, saves resultW and resultH to .NMF.result.RData
+
+#### Loads .RData with list of simulated mixture data, trueH, trueW, unmixed data/signature matrices
+```{r}
+load("~/rnaGinesis/data/Dataset_Simulation.RData")
+```
+
+#### Runs NMF on simulated mixture data and obtains resultW, resultH
+```{r}
+mixture <- Dataset_Simulation$ex
+# Calls helper method runNMF to run NMF on mixture 
+Dataset_Simulation.NMF <- runNMF(mixture, rank = 3)
+```
+
+#### Saves results from NMF to .RData file
+```{r}
+save(Dataset_Simulation.NMF, file = "~/rnaGinesis/data/Dataset_Simulation.NMF.result.RData")
+```

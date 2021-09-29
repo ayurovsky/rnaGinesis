@@ -1,0 +1,96 @@
+---
+title: "Short_Demo"
+output: pdf_document
+---
+
+```{r, warning=FALSE,message=FALSE,error=FALSE}
+library(rnaGinesis)
+library(ggplot2)
+library(reshape)
+mu <- rnaGinesis::mu
+A <- rnaGinesis::A
+
+```
+ 
+# a reasonably normal settings, modeling 4 tissues
+
+```{r}
+simresult.a <- simulate_and_test(A_tumor  = A[1:100,1:100],
+                               mu_tumor   = mu[1:100],
+                               num.sim    = 20,
+                               Samplesize  = 100,
+                               scaleFactor = rep(30, 3),
+                               d.params    = c("Tumor"   = .3,
+                                               "Stromal" = .5,
+                                               "Immune"  = .1,
+                                               "Normal"  = .1),
+                               noise_setting = 1.5,
+                               seed          = 1234 )
+
+```
+
+# high noise
+
+```{r}
+simresult.b <- simulate_and_test(A_tumor  = A[1:100,1:100],
+                               mu_tumor   = mu[1:100],
+                               num.sim    = 20,
+                               Samplesize  = 100,
+                               scaleFactor = rep(30, 3),
+                               d.params    = c("Tumor"   = .3,
+                                               "Stromal" = .5,
+                                               "Immune"  = .1,
+                                               "Normal"  = .1),
+                               noise_setting = 10,
+                               seed          = 1234 )
+
+```
+
+```{r, warning=FALSE,message=FALSE,error=FALSE}
+x.a <- melt(simresult.a[[1]])
+x.b <- melt(simresult.b[[1]])
+x.a$condition <- "normal noise"
+x.b$condition <- "high noise"
+
+mydf <- rbind(x.a,x.b)
+mydf<- mydf[,-1]
+names(mydf) <- c("tissue","H.RMSE","condition")
+
+p <- ggplot(data = mydf,
+            aes(y = H.RMSE,
+                x= tissue))
+p <- p + geom_violin()
+p <- p + geom_jitter(width = 0.1)
+p <- p + facet_grid(~condition)
+print(p)
+```
+
+```{r, warning=FALSE,message=FALSE,error=FALSE}
+x.a <- melt(simresult.a[[4]])
+x.b <- melt(simresult.b[[4]])
+x.a$condition <- "normal noise"
+x.b$condition <- "high noise"
+
+mydf <- rbind(x.a,x.b)
+mydf<- mydf[,-1]
+names(mydf) <- c("tissue","w_cos_dist","condition")
+
+p <- ggplot(data = mydf,
+            aes(y = w_cos_dist,
+                x= tissue))
+p <- p + geom_violin()
+p <- p + geom_jitter(width = 0.1)
+p <- p + facet_grid(~condition)
+print(p)
+```
+
+
+
+
+
+
+
+
+
+
+

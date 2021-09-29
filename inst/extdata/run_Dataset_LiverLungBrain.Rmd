@@ -1,0 +1,29 @@
+---
+title: "run_Dataset_LiverLungBrain.NMF"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+### Runs NMF on expression matrix from brain, liver, lung mixture data (GSE19830) saved in .RData, saves resultW and resultH to .NMF.result.RData
+
+#### Loads .RData with list of simulated mixture data, trueH, trueW, unmixed data/signature matrices
+```{r}
+load("~/rnaGinesis/data/Dataset_LiverLungBrain.RData")
+```
+
+#### Runs NMF on scRNA-seq mixture data and obtains resultW, resultH
+```{r}
+# Calls helper method runNMF to run NMF on mixture
+mixture <- Dataset_LiverLungBrain$ex
+Dataset_LiverLungBrain.NMF <- runNMF(mixture = mixture, rank = 3)
+```
+
+#### Saves results from NMF to .RData file
+```{r}
+save(Dataset_LiverLungBrain.NMF, file = "~/rnaGinesis/data/Dataset_LiverLungBrain.NMF.result.RData")
+```
