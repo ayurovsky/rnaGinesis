@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Obtains trueW, trueH from exp
 
-load("~/rnaGinesis/data/alisa_exp2.RData")
+load("~/rnaGinesis_private/data/alisa_exp2.RData")
 
 ####
 # Obtains resultW, resultH from NMF and rearranges them to match trueW, trueH ordering
@@ -45,6 +45,7 @@ start_time <- Sys.time()
 improvedW <- list()
 for (sample_n in 1:ncol(experiment_to_use$trueH)) {
   #sample_n = 1
+  print(sample)
   sample_w <- vector()
   for (gene_n in 1:100) {
     compartments_n <- nrow(experiment_to_use$trueH)

@@ -35,8 +35,9 @@ trueH <- experiment_to_use$trueH
 
 ```{r}
 #install.packages("ROI")
-library(ROI)
-#install.packages("ROI.plugin.optimx") # alabama does not enforce bound constraint
+#library(ROI)
+#install.packages("ROI.plugin.alabama") # alabama does not enforce bound constraint... optimx?
+#library("ROI.plugin.alabama")
 #library(ROI.plugin.optimx)
 # https://palomar.home.ece.ust.hk/MAFS6010R_lectures/Rsession_solvers.html#conclusion
 # http://roi.r-forge.r-project.org/introduction.html

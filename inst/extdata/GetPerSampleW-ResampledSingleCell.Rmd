@@ -1,0 +1,179 @@
+---
+title: "GetPerSampleW-ResampledSingleCell.Rmd"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+```{r}
+
+# Obtains trueW, trueH from exp
+library(rnaGinesis)
+load("~/rnaGinesis_private/data/Dataset_ResampledSingleCell.RData")
+
+####
+# Obtains resultW, resultH from NMF and rearranges them to match trueW, trueH ordering
+mixture <- Dataset_ResampledSingleCell$ex
+# Calls helper method runNMF to run NMF on mixture 
+Dataset_ResampledSingleCell.NMF <- runNMF(mixture, rank = 3)
+Dataset_ResampledSingleCell.NMF <- rearrange(Dataset_ResampledSingleCell.NMF, Dataset_ResampledSingleCell)
+resultW.NMF <- Dataset_ResampledSingleCell.NMF[[1]]
+resultH.NMF <- Dataset_ResampledSingleCell.NMF[[2]]
+####
+
+####
+experiment_to_use <- Dataset_ResampledSingleCell
+trueMixed <- experiment_to_use$ex
+trueH <- experiment_to_use$trueH
+trueW <- experiment_to_use$trueW
+####
+
+```
+```{r}
+install.packages("ROI") #5min to run 100genes...
+library(ROI)
+install.packages("ROI.plugin.alabama") # alabama does not enforce bound constraint/ try omptimx??
+library(ROI.plugin.alabama)
+# https://palomar.home.ece.ust.hk/MAFS6010R_lectures/Rsession_solvers.html#conclusion
+# http://roi.r-forge.r-project.org/introduction.html
+# file:///Users/alisa/Downloads/v94i15.pdf
+```
+
+```{r}
+library(foreach)
+library(doParallel)
+registerDoParallel(5)
+```
+
+```{r}
+bla <- foreach (i=1:3) %dopar% {
+  sqrt(i)
+}
+```
+
+
+```{r}
+
+start_time <- Sys.time()
+improvedW <- foreach (sample_n=1:ncol(experiment_to_use$trueH)) %dopar% {
+  #sample_n = 1
+  sample_w <- vector()
+  for (gene_n in 1:1000) { #nrow(experiment_to_use$ex)) {
+    compartments_n <- nrow(experiment_to_use$trueH)
+    mixed <- trueMixed[gene_n,sample_n]
+    truew <- experiment_to_use$trueW[[sample_n]][gene_n,]
+    trueh <- trueH[,sample_n]
+    nmf_h <- resultH.NMF[,sample_n]
+    nmf_w <- resultW.NMF[[sample_n]][gene_n,]
+    
+    # build objective function
+    eval_f <- "function(x) { return ( "
+    for (i in 1:(compartments_n-1)){
+      eval_f <- paste0(eval_f, "(x[", i ,"] - ", nmf_w[i], ")^2 + ")
+    }
+    eval_f <- paste0(eval_f,"(x[",i+1,"] - ", nmf_w[i+1], ")^2 ) }")
+    eval_f <- eval(parse(text = eval_f)) #noquote(eval_f)
+    
+    
+    # equality constraints
+    eval_g_eq <- "function(x) { return ( "
+    for (i in 1:(compartments_n-1)){
+      eval_g_eq <- paste0(eval_g_eq, "x[", i ,"] * ", nmf_h[i], " + ")
+    }
+    eval_g_eq <-  paste0(eval_g_eq, "x[", i+1 ,"] * ", nmf_h[i+1], " - ", mixed, ") }")
+    eval_g_eq <- eval(parse(text = eval_g_eq)) #noquote(eval_g_eq)
+    
+    # lower bound constraints
+    
+    #initial values
+    x0 <- as.vector(nmf_w) #c(0,0,0)
+    
+    nlp <- OP(objective = F_objective(eval_f, n=3), 
+            constraints = F_constraint(eval_g_eq, dir = "==", rhs = 0), bounds = V_bound(lb = c(0.0001, 0.0001, 0.0001)))
+    
+    sol <- ROI_solve(nlp, solver = "alabama", start = x0)
+    
+    neww <- as.vector(sol$solution)
+    
+    sample_w <- rbind(sample_w, neww)
+    rownames(sample_w)[gene_n] <- rownames(trueMixed)[gene_n]
+  }
+  #print(sample_n)
+  #improvedW[[sample_n]] <- sample_w
+  sample_w
+}
+
+improvedW_50_100 <- improvedW
+end_time <- Sys.time()
+end_time - start_time
+
+# 10 genes 1.2 sec
+# 100 genes 9.48 sec
+# 1000 genes 1.42 mins
+# a little more than 10x faster than nloptr, now lets look at results - alas, alabama does not enforce
+# lower bound constraints - need a hack
+
+all(improvedW_50_100[[1]] > 0.0)
+
+```
+
+
+
+
+
+#### now
+```{r}
+
+# Evaluate the Error between true and nmf, then true and newly recomputed -
+# for now, no scaling!!! What to do with 0's????
+
+sample_avg_nmf_error <- list()
+sample_avg_new_error <- list()
+for (sample_n in 1:ncol(experiment_to_use$trueH)) {
+  nmf_error <- list()
+  new_error <- list()
+  for (gene_n in 1:1000) {
+    nmf_w <- as.vector(resultW.NMF[[sample_n]][gene_n,])
+    true_w <- as.vector(trueW[[sample_n]][gene_n,])
+    new_w <- improvedW_50_100[[sample_n]][gene_n,]
+    # do average over all compartments
+    nmf_error <- c(nmf_error, mean(mapply(function(x,y) {abs(x-y)}, nmf_w, true_w)))
+    new_error <- c(new_error, mean(mapply(function(x,y) {abs(x-y)}, new_w, true_w)))
+  }   
+  # do average over all genes
+  sample_avg_nmf_error[[sample_n]] <- mean(unlist(nmf_error))
+  sample_avg_new_error[[sample_n]] <- mean(unlist(new_error))
+}
+print(unlist(sample_avg_nmf_error))
+print(unlist(sample_avg_new_error))
+```
+
+#### to visualize
+```{r}
+#nmf_errrors <- c(0.9197431,0.8732260,0.8628532,0.8766717,0.7286143,0.8765111,1.1957570,0.8259292,0.8896389,1.1648379,1.0034013,1.3928576,0.8106298,1.2777547,1.6815175,0.8004751,0.8438972,0.8255083,0.8459877,1.1311245,0.9375564,1.2467072,0.7894286,1.0047123,0.8665529,0.9096335,0.8201019,0.7763832,1.0075253,1.1150117,1.0845164,0.8982973,0.8722991,0.7688966,0.9329475,0.8080176,0.7241039,0.8835089,0.9191685,0.8555706,0.7601390,1.0524369,0.8194580,0.9656115,0.9368493,0.7500322,0.7814410,0.7598736,0.9542730,0.7411015)
+#new_errors <- c(0.7372467,0.6585629,0.6356027,0.6250387,0.5605095,0.6777216,1.2168368,0.5329707,0.6885044,1.1997937,0.7965790,1.1914671,0.6360163,1.1739833,1.4899116,0.6806480,0.6914201,0.5252903,0.7970747,1.0672507,0.5495045,1.0810441,0.6906351,0.7746673,0.6699077,0.7716373,0.6125543,0.5664304,0.9122855,0.9734403,0.9617990,0.6791689,0.6518652,0.4863013,0.6861106,0.6824499,0.5130351,0.7777451,0.7555122,0.6665881,0.5225467,0.9231829,0.6025442,0.7730079,0.6681586,0.4879162,0.6024806,0.5925863,0.7885882,0.5365672)
+
+nmf_errors <- unlist(sample_avg_nmf_error)
+new_errors <- unlist(sample_avg_new_error)
+
+new_errors_df <- as.data.frame(new_errors)
+new_errors_df$method <- "new"
+colnames(new_errors_df) <- c("errors", "method")
+nmf_errors_df <- as.data.frame(nmf_errors)
+nmf_errors_df$method <- "nmf"
+colnames(nmf_errors_df) <- c("errors", "method")
+errros_df <- rbind(nmf_errors_df, new_errors_df)
+
+library(ggplot2)
+set.seed(1234)
+p2 <- ggplot2::ggplot(data = errros_df, ggplot2::aes(y = errors, x= method, fill = method))
+p2 <- p2 + ggplot2::geom_violin()
+p2 <- p2 + ggplot2::geom_jitter(width = 0.1, height = 0)
+p2 <- p2 + ggplot2::labs(title="Violin Plots of Errors in Individual Gene Expression",x = "Deconvolution Method", y = "Per Sample Avg Abs Deviation") + ggplot2::theme(axis.title.x = ggplot2::element_text(size = 20)) + ggplot2::theme(axis.title.y = ggplot2::element_text(size = 20)) + ggplot2::theme(axis.text=ggplot2::element_text(size=20))
+p2
+
+
+```

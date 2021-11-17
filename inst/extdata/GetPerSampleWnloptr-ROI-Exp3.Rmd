@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 # Obtains trueW, trueH from exp
 #load("~/rnaGinesis/data/alisa_new_A_mu_exp1_no_noise.RData")
 #load("~/rnaGinesis/data/alisa_exp2.RData")
-load("~/rnaGinesis/data/alisa_exp3.RData")
+load("~/rnaGinesis_private/data/alisa_exp3.RData")
 
 ####
 # Obtains resultW, resultH from NMF and rearranges them to match trueW, trueH ordering
