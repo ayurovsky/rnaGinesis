@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 #### Load parsed scRNA-seq data 
 ```{r}
-load("~/rnaGinesis/data/muraro.RData")
+load("~/rnaGinesis_private/data/muraro.RData")
 ```
 
 #### Creates mu (avg W) with cell-type gene expression profiles
@@ -57,5 +57,5 @@ Dataset_ResampledSingleCell$unmixed = mu
 
 #### Saves Dataset_ResampledSingleCell data to .RData file
 ```{r}
-save(Dataset_ResampledSingleCell, file = "~/rnaGinesis/data/Dataset_ResampledSingleCell.RData")
+save(Dataset_ResampledSingleCell, file = "~/rnaGinesis_private/data/Dataset_ResampledSingleCell.RData")
 ```
